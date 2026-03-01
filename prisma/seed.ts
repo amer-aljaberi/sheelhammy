@@ -7,7 +7,6 @@ import { resolve } from "path";
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env") });
 
-// Create PrismaClient with adapter for seed script
 const connectionString = process.env.DATABASE_URL || "";
 
 if (!connectionString) {
