@@ -32,20 +32,40 @@ export async function generateSEOMetadata(config: SEOConfig = {}): Promise<Metad
     : settings.siteTitle || settings.platformName || "شيل همي";
   
   const description = config.description || settings.siteDescription || 
-    "منصة خدمات أكاديمية وطلابية متخصصة في دعم طلاب الجامعات في إعداد الأبحاث، التقارير، والمشاريع باحترافية عالية";
+    "شيل همّي منصة عربية متخصصة في الخدمات الأكاديمية والطلابية، نقدم حل الأسايمنت، إعداد الأبحاث، مشاريع التخرج، والتدقيق اللغوي لكافة التخصصات في الوطن العربي بجودة عالية وسرية تامة";
   
   const keywords = config.keywords || 
     (settings.siteKeywords ? settings.siteKeywords.split(",").map(k => k.trim()) : [
       "خدمات أكاديمية",
-      "كتابة أبحاث",
-      "كتابة تقارير",
-      "مشاريع جامعية",
       "مساعدة طلاب",
-      "خدمات تعليمية",
-      "كتابة علمية",
-      "تحرير أكاديمي",
-      "ترجمة أكاديمية",
-      "مراجعة أبحاث"
+      "حل أسايمنت",
+      "إعداد أبحاث جامعية",
+      "مشاريع تخرج",
+      "تقارير جامعية",
+      "كتابة بحث علمي",
+      "تدقيق لغوي",
+      "تنسيق أبحاث",
+      "خدمات طلابية",
+      "دعم أكاديمي",
+      "بحوث جامعية",
+      "كتابة رسائل جامعية",
+      "حل واجبات جامعية",
+      "منصة خدمات طلابية",
+      "مساعدة جامعية أونلاين",
+      "خدمات أكاديمية في الأردن",
+      "خدمات أكاديمية في السعودية",
+      "خدمات أكاديمية في الخليج",
+      "خدمات أكاديمية في الوطن العربي",
+      "Academic Services",
+      "Student Support Services",
+      "Assignment Help",
+      "Graduation Projects",
+      "Research Writing",
+      "Academic Writing Services",
+      "Online Student Assistance",
+      "University Assignment Help",
+      "Thesis Support",
+      "Academic Editing"
     ]);
   
   const image = config.image || getDefaultImage();

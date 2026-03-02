@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "i.ibb.co",
       },
+      {
+        protocol: "https",
+        hostname: "okenoisic5wgxte8.public.blob.vercel-storage.com",
+      },
     ],
   },
   // compiler: {

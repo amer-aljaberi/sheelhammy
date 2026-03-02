@@ -6,17 +6,22 @@ import { generateSEOMetadata } from '@/lib/seo/metadata'
 
 export async function generateMetadata() {
   return generateSEOMetadata({
-    title: "طرق الدفع - شيل همي",
-    description: "اكتشف طرق الدفع المتاحة في منصة شيل همي. نقبل الدفع عبر Arab Bank، CliQ، MoneyGram، U-Wallet، Western Union، و Zain Cash. طرق دفع آمنة ومتعددة لراحتك.",
+    title: "طرق الدفع - شيل همّي",
+    description: "تعرف على طرق الدفع المتاحة في شيل همّي، نوفر وسائل دفع آمنة وسريعة لتحويل رسوم الخدمات الأكاديمية مع تأكيد فوري وسرية تامة في جميع العمليات.",
     keywords: [
       "طرق الدفع",
-      "Arab Bank",
-      "CliQ",
-      "MoneyGram",
-      "U-Wallet",
-      "Western Union",
-      "Zain Cash",
-      "دفع آمن"
+      "وسائل دفع آمنة",
+      "الدفع للخدمات الأكاديمية",
+      "تحويل رسوم خدمة",
+      "دفع أونلاين",
+      "دفع آمن",
+      "حماية البيانات المالية",
+      "تأكيد الدفع",
+      "سرية العمليات المالية",
+      "خدمات أكاديمية",
+      "منصة خدمات طلابية",
+      "طلب خدمة أكاديمية",
+      "دعم طلاب أونلاين"
     ],
     url: "/payment",
   });
