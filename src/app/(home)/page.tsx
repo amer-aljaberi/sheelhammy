@@ -1,4 +1,5 @@
 import React from 'react'
+import type { Metadata } from 'next'
 import { HeroSection } from './_components/hero'
 import { Stats } from './_components/stats'
 import { AboutSection } from './_components/about'
@@ -12,7 +13,7 @@ import Benfits from './_components/benfits'
 import { generateStructuredData } from '@/lib/seo/metadata'
 import { getSettings } from '@/lib/settings'
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   const { generateSEOMetadata } = await import('@/lib/seo/metadata');
   
@@ -42,9 +43,9 @@ export default async function page() {
     type: "Organization",
     data: {
       name: settings.platformName || "شيل همي",
-      description: settings.siteDescription || settings.platformDescription || "منصة خدمات أكاديمية وطلابية متخصصة",
-      phone: settings.contactPhone || "+962-7-8185-8647",
-      email: settings.contactEmail || "info@sheelhammy.com",
+      description: settings.siteDescription || ("platformDescription" in settings ? settings.platformDescription : null) || "منصة خدمات أكاديمية وطلابية متخصصة",
+      phone: ("contactPhone" in settings ? settings.contactPhone : null) || "+962-7-8185-8647",
+      email: ("contactEmail" in settings ? settings.contactEmail : null) || "info@sheelhammy.com",
     },
   });
 
@@ -53,7 +54,7 @@ export default async function page() {
     type: "WebSite",
     data: {
       name: settings.platformName || "شيل همي",
-      description: settings.siteDescription || settings.platformDescription || "منصة خدمات أكاديمية وطلابية متخصصة",
+      description: settings.siteDescription || ("platformDescription" in settings ? settings.platformDescription : null) || "منصة خدمات أكاديمية وطلابية متخصصة",
     },
   });
 

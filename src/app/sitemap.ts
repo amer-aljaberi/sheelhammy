@@ -85,13 +85,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const blogs = await prisma.blog.findMany({
       where: {
-        published: true,
+        isPublished: true,
       },
       select: {
         slug: true,
         updatedAt: true,
       },
-      take: 1000, // Limit to prevent too large sitemap
+      take: 1000, 
     });
 
     blogPages = blogs.map((blog) => ({
