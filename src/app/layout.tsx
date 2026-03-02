@@ -8,7 +8,8 @@ import { BackToTop } from "@/components/common/back-to-top";
 import { ConditionalLayout } from "@/components/Layout/conditional-layout";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { generateSEOMetadata } from "@/lib/seo/metadata";
-
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "700", "800", "900"],
@@ -79,6 +80,8 @@ export default async function RootLayout({
       >
         <body className={`${tajawal.className} antialiased`}>
           <Providers>
+            <Analytics />
+            <SpeedInsights />
             <SettingsProvider>
               <Toaster richColors position="top-right" />
               <ConditionalLayout>
