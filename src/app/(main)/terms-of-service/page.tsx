@@ -1,6 +1,21 @@
 import React from "react";
 import { PageHero } from "@/components/common/page-hero";
 import { PolicyContent } from "../../../components/common/policy-content";
+import { generateSEOMetadata } from '@/lib/seo/metadata';
+
+export async function generateMetadata() {
+  return generateSEOMetadata({
+    title: "شروط الاستخدام - شيل همي",
+    description: "اقرأ شروط الاستخدام في منصة شيل همي. تعرف على حقوقك والتزاماتك عند استخدام خدماتنا الأكاديمية والطلابية.",
+    keywords: [
+      "شروط الاستخدام",
+      "الشروط والأحكام",
+      "شيل همي"
+    ],
+    url: "/terms-of-service",
+    noindex: true,
+  });
+}
 
 const content = {
   title: "شروط الاستخدام",

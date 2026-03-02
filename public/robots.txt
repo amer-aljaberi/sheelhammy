@@ -1,0 +1,14 @@
+# robots.txt for شيل همي
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /ref/
+
+# Sitemap
+Sitemap: https://sheelhammy.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1

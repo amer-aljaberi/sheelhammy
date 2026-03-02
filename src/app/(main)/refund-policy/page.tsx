@@ -1,6 +1,21 @@
 import React from "react";
 import { PageHero } from "@/components/common/page-hero";
 import { PolicyContent } from "../../../components/common/policy-content";
+import { generateSEOMetadata } from '@/lib/seo/metadata';
+
+export async function generateMetadata() {
+  return generateSEOMetadata({
+    title: "سياسة الاسترجاع - شيل همي",
+    description: "تعرف على سياسة الاسترجاع في منصة شيل همي. شروط وأحكام الإلغاء والاسترجاع المالي للخدمات الأكاديمية والطلابية.",
+    keywords: [
+      "سياسة الاسترجاع",
+      "إرجاع المال",
+      "شيل همي"
+    ],
+    url: "/refund-policy",
+    noindex: true,
+  });
+}
 
 const content = {
   title: "سياسة الاسترجاع",

@@ -7,7 +7,7 @@ import { FloatingWhatsApp } from "@/components/common/floating-whatsapp";
 import { BackToTop } from "@/components/common/back-to-top";
 import { ConditionalLayout } from "@/components/Layout/conditional-layout";
 import { SettingsProvider } from "@/contexts/SettingsContext";
-import { getSettings } from "@/lib/settings";
+import { generateSEOMetadata } from "@/lib/seo/metadata";
 
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
@@ -17,13 +17,25 @@ const tajawal = Tajawal({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSettings();
-  
-  return {
-    title: settings.siteTitle || settings.platformName || "شيل همي",
-    description: settings.siteDescription || settings.siteDescription || "",
-    keywords: settings.siteKeywords?.split(",").map(k => k.trim()) || [],
-  };
+  return generateSEOMetadata({
+    description: "منصة خدمات أكاديمية وطلابية متخصصة في دعم طلاب الجامعات في إعداد الأبحاث، التقارير، والمشاريع باحترافية عالية. نلتزم بالجودة، السرية التامة، وتسليم الأعمال في الوقت المحدد.",
+    keywords: [
+      "خدمات أكاديمية",
+      "كتابة أبحاث",
+      "كتابة تقارير",
+      "مشاريع جامعية",
+      "مساعدة طلاب",
+      "خدمات تعليمية",
+      "كتابة علمية",
+      "تحرير أكاديمي",
+      "ترجمة أكاديمية",
+      "مراجعة أبحاث",
+      "شيل همي",
+      "خدمات طلابية",
+      "أبحاث جامعية",
+      "تقارير أكاديمية"
+    ],
+  });
 }
 
  

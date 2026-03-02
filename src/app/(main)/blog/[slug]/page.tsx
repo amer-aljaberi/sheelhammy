@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { generateStructuredData } from "@/lib/seo/metadata";
 
 type BlogPost = {
   id: string;
@@ -39,6 +40,7 @@ export default function BlogPostPage() {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [structuredData, setStructuredData] = useState<any>(null);
 
   // Helper function to parse tags
   const parseTags = (tags: string[] | string | null): string[] => {
@@ -61,6 +63,26 @@ export default function BlogPostPage() {
       fetchPost();
     }
   }, [slug]);
+
+  useEffect(() => {
+    if (post && post.publishedAt) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://sheelhammy.com";
+      const image = post.image || `${siteUrl}/og-image.jpg`;
+      
+      const data = generateStructuredData({
+        type: "Article",
+        data: {
+          headline: post.title,
+          description: post.excerpt || "",
+          image,
+          datePublished: post.publishedAt,
+          dateModified: post.publishedAt,
+          author: post.author || "شيل همي",
+        },
+      });
+      setStructuredData(data);
+    }
+  }, [post]);
 
   const fetchPost = async () => {
     setIsLoading(true);
@@ -191,13 +213,20 @@ export default function BlogPostPage() {
   }
 
   return (
-    <main>
-      <PageHero
-        title={post.title}
-        description={post.excerpt || undefined}
-        badge={post.category || "المدونة"}
-        badgeIcon="solar:document-text-bold"
-      />
+    <>
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      )}
+      <main>
+        <PageHero
+          title={post.title}
+          description={post.excerpt || undefined}
+          badge={post.category || "المدونة"}
+          badgeIcon="solar:document-text-bold"
+        />
 
       <article dir="rtl" className="py-12 bg-gradient-to-b from-white to-gray-50/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
@@ -422,6 +451,7 @@ export default function BlogPostPage() {
           </div>
         </div>
       </article>
-    </main>
+      </main>
+    </>
   );
 }

@@ -1,6 +1,21 @@
 import React from "react";
 import { PageHero } from "@/components/common/page-hero";
 import { PolicyContent } from "../../../components/common/policy-content";
+import { generateSEOMetadata } from '@/lib/seo/metadata';
+
+export async function generateMetadata() {
+  return generateSEOMetadata({
+    title: "سياسة الدفع - شيل همي",
+    description: "تعرف على سياسة الدفع في منصة شيل همي. شروط وأحكام الدفع، طرق الدفع المتاحة، وآلية توثيق المدفوعات.",
+    keywords: [
+      "سياسة الدفع",
+      "شروط الدفع",
+      "شيل همي"
+    ],
+    url: "/payment-policy",
+    noindex: true,
+  });
+}
 
 const content = {
   title: "سياسة الدفع",

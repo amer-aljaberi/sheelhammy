@@ -1,6 +1,22 @@
 import React from "react";
 import { PageHero } from "@/components/common/page-hero";
 import { PolicyContent } from "../../../components/common/policy-content";
+import { generateSEOMetadata } from '@/lib/seo/metadata';
+
+export async function generateMetadata() {
+  return generateSEOMetadata({
+    title: "سياسة الخصوصية - شيل همي",
+    description: "تعرف على سياسة الخصوصية في منصة شيل همي. نلتزم بحماية بياناتك وخصوصيتك وفق أعلى المعايير. اقرأ كيف نجمع ونستخدم ونحمي معلوماتك.",
+    keywords: [
+      "سياسة الخصوصية",
+      "حماية البيانات",
+      "الخصوصية",
+      "شيل همي"
+    ],
+    url: "/privacy-policy",
+    noindex: true,
+  });
+}
 
 const content = {
   title: "سياسة الخصوصية",
