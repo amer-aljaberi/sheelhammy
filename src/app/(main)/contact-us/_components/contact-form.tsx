@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
+import { Suspense } from "react";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ type FormData = {
   filesLink: string;
 };
 
-export function ContactForm() {
+function ContactFormContent() {
   const searchParams = useSearchParams();
   const [referrerCode, setReferrerCode] = useState<string | null>(null);
   const [referrerInfo, setReferrerInfo] = useState<{ name: string; code: string } | null>(null);
@@ -784,5 +785,22 @@ export function ContactForm() {
           </motion.div>
         </motion.div>
       </section>
+  );
+}
+
+export function ContactForm() {
+  return (
+    <Suspense fallback={
+      <section dir="rtl" className="py-20 relative overflow-hidden bg-white dark:bg-gray-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
+          <div className="text-center py-20">
+            <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">جاري التحميل...</p>
+          </div>
+        </div>
+      </section>
+    }>
+      <ContactFormContent />
+    </Suspense>
   );
 }

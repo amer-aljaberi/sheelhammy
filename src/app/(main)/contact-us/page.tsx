@@ -1,9 +1,10 @@
 import React from 'react'
-import { ContactHero } from './_components/contact-hero'
-import { ContactForm } from './_components/contact-form'
+import type { Metadata } from 'next'
+import { ContactHero } from './_components/contact-hero' 
 import { generateSEOMetadata } from '@/lib/seo/metadata'
+import { ContactForm } from './_components/contact-form';
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return generateSEOMetadata({
     title: "تواصل معنا - شيل همّي",
     description: "تواصل مع فريق شيل همّي للخدمات الأكاديمية بسهولة عبر واتساب أو نموذج التواصل، واحصل على استشارة سريعة ودعم احترافي لجميع التخصصات في الوطن العربي.",
