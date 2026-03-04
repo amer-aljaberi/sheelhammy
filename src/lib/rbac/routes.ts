@@ -29,6 +29,11 @@ export function canAccessRoute(role: Role, pathname: string, permissions?: strin
     
     // For admin routes, check permissions if specified
     if (pathname.startsWith("/admin")) {
+      // Always allow access to /admin root path to prevent redirect loops
+      if (pathname === "/admin") {
+        return true;
+      }
+      
       // If no permissions specified, allow all (full admin access)
       if (!permissions || permissions.length === 0) {
         return true;

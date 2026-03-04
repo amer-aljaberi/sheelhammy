@@ -22,6 +22,7 @@ export default function Providers({ children }: { children: ReactNode }) {
     <SessionProvider
       refetchInterval={0}
       refetchOnWindowFocus={false}
+      basePath="/api/auth" 
     >
       <QueryClientProvider client={queryClient}>
         {children}

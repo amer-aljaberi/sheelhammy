@@ -18,6 +18,7 @@ if (!secret || secret === "your-secret-key-here-change-this-in-production") {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  basePath: "/api/auth",
   providers: [
     Credentials({
       credentials: {
@@ -114,5 +115,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: secret || "fallback-secret-for-development-only-change-in-production",
   trustHost: true,
   debug: process.env.NODE_ENV === "development",
-  basePath: "/api/auth",
+  useSecureCookies: process.env.NODE_ENV === "production",
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +50,8 @@ export function PaymentForm({
 }: PaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [currentPaidAmount, setCurrentPaidAmount] = useState<number>(0); // تتبع المبلغ المدفوع الحالي
+  const lastOrderIdRef = useRef<string>(""); // تتبع آخر orderId الذي تم تحديث currentPaidAmount له
   const [formData, setFormData] = useState({
     orderId: "",
     amount: "",
@@ -60,7 +62,8 @@ export function PaymentForm({
   });
 
   useEffect(() => {
-    if (open) {
+    if (open && !formData.orderId) {
+      // إعادة تعيين فقط عند فتح النافذة لأول مرة (بدون orderId محدد)
       setFormData({
         orderId: "",
         amount: "",
@@ -70,23 +73,40 @@ export function PaymentForm({
         notes: "",
       });
       setSelectedOrder(null);
+      setCurrentPaidAmount(0);
+      lastOrderIdRef.current = "";
     }
-  }, [open]);
+  }, [open]); // إزالة orders من dependency
 
   useEffect(() => {
     if (formData.orderId) {
       const order = orders.find((o) => o.id === formData.orderId);
-      setSelectedOrder(order || null);
       if (order) {
+        setSelectedOrder(order);
+        // إذا تغير orderId، نعيد تعيين currentPaidAmount من order
+        if (lastOrderIdRef.current !== formData.orderId) {
+          setCurrentPaidAmount(order.paidAmount || 0);
+          lastOrderIdRef.current = formData.orderId;
+        }
+        
+        // استخدام currentPaidAmount المحدث أو paidAmount من order
+        const paid = currentPaidAmount > 0 ? currentPaidAmount : (order.paidAmount || 0);
         const total = order.totalPrice - (order.discount || 0);
-        const paid = order.paidAmount || 0;
         const remaining = total - paid;
         setFormData((prev) => ({
           ...prev,
-          amount: remaining.toString(),
+          amount: remaining > 0 ? remaining.toString() : "0",
           paymentType: order.paymentType || "cash",
         }));
+      } else {
+        setSelectedOrder(null);
+        setCurrentPaidAmount(0);
+        lastOrderIdRef.current = "";
       }
+    } else {
+      setSelectedOrder(null);
+      setCurrentPaidAmount(0);
+      lastOrderIdRef.current = "";
     }
   }, [formData.orderId, orders]);
 
@@ -124,15 +144,30 @@ export function PaymentForm({
         throw new Error(error.error || "حدث خطأ");
       }
 
-      // تحديث حالة الطلب إذا كان الدفع كامل
+      // تحديث المبلغ المدفوع محلياً
       const order = orders.find((o) => o.id === formData.orderId);
       if (order) {
-        const total = order.totalPrice - (order.discount || 0);
-        const currentPaid = order.paidAmount || 0;
+        const currentPaid = currentPaidAmount > 0 ? currentPaidAmount : (order.paidAmount || 0);
         const newPaid = currentPaid + amount;
+        setCurrentPaidAmount(newPaid);
         
+        // تحديث selectedOrder محلياً
+        const total = order.totalPrice - (order.discount || 0);
+        setSelectedOrder({
+          ...order,
+          paidAmount: newPaid,
+          isPaid: newPaid >= total,
+        });
+        
+        // تحديث المبلغ المتبقي في النموذج
+        const remaining = total - newPaid;
+        setFormData((prev) => ({
+          ...prev,
+          amount: remaining > 0 ? remaining.toString() : "0",
+        }));
+        
+        // تحديث حالة الطلب إذا كان الدفع كامل
         if (newPaid >= total) {
-          // الدفع كامل
           await fetch(`/api/admin/orders/${formData.orderId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -144,8 +179,7 @@ export function PaymentForm({
       }
 
       toast.success("تم تسجيل الدفع بنجاح");
-      onOpenChange(false);
-      onSuccess();
+      onSuccess(); // هذا سيحدث orders array في الصفحة الأم
     } catch (error: any) {
       toast.error(error.message || "حدث خطأ أثناء تسجيل الدفع");
     } finally {
@@ -189,32 +223,36 @@ export function PaymentForm({
                 </SelectContent>
               </Select>
             </div>
-            {selectedOrder && (
-              <>
+            {selectedOrder && (() => {
+              const total = selectedOrder.totalPrice - (selectedOrder.discount || 0);
+              const paid = currentPaidAmount > 0 ? currentPaidAmount : (selectedOrder.paidAmount || 0);
+              const remaining = total - paid;
+              
+              return (
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <div>
                       <span className="text-gray-600">المجموع:</span>
                       <span className="font-semibold mr-2">
-                        {(selectedOrder.totalPrice - (selectedOrder.discount || 0)).toFixed(2)} د.أ
+                        {total.toFixed(2)} د.أ
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-600">المدفوع:</span>
                       <span className="font-semibold mr-2 text-green-600">
-                        {(selectedOrder.paidAmount || 0).toFixed(2)} د.أ
+                        {paid.toFixed(2)} د.أ
                       </span>
                     </div>
                     <div className="col-span-2">
                       <span className="text-gray-600">المتبقي:</span>
                       <span className="font-semibold mr-2 text-red-600">
-                        {((selectedOrder.totalPrice - (selectedOrder.discount || 0)) - (selectedOrder.paidAmount || 0)).toFixed(2)} د.أ
+                        {remaining.toFixed(2)} د.أ
                       </span>
                     </div>
                   </div>
                 </div>
-              </>
-            )}
+              );
+            })()}
             <div>
               <Label>المبلغ المدفوع</Label>
               <Input

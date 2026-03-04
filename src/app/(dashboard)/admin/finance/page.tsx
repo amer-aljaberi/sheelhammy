@@ -19,6 +19,7 @@ import { ExpenseForm } from "./_components/ExpenseForm";
 import { ExpenseModel } from "./_components/ExpenseModel";
 import { TransferForm } from "./_components/TransferForm";
 import { TransferReceiptDialog } from "./_components/TransferReceiptDialog";
+import { TransferDeleteDialog } from "./_components/TransferDeleteDialog";
 
 type Employee = {
   id: string;
@@ -58,10 +59,12 @@ export default function FinancePage() {
   const [isExpenseDialogOpen, setIsExpenseDialogOpen] = useState(false);
   const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false);
   const [isDeleteExpenseDialogOpen, setIsDeleteExpenseDialogOpen] = useState(false);
+  const [isDeleteTransferDialogOpen, setIsDeleteTransferDialogOpen] = useState(false);
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false);
   const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
+  const [transferToDelete, setTransferToDelete] = useState<Transfer | null>(null);
 
   const fetchStats = async () => {
     try {
@@ -171,6 +174,7 @@ export default function FinancePage() {
     fetchExpenses();
     fetchTransfers();
     fetchEmployeeServices();
+    fetchOrders(); // إعادة جلب بيانات الطلبات بعد تسجيل الدفع
   };
 
   const handleMarkAsPaid = (paymentId: string) => {
@@ -196,6 +200,16 @@ export default function FinancePage() {
   const handleViewReceipt = (transfer: Transfer) => {
     setSelectedTransfer(transfer);
     setIsReceiptDialogOpen(true);
+  };
+
+  const handleEditTransfer = (transfer: Transfer) => {
+    setSelectedTransfer(transfer);
+    setIsTransferDialogOpen(true);
+  };
+
+  const handleDeleteTransfer = (transfer: Transfer) => {
+    setTransferToDelete(transfer);
+    setIsDeleteTransferDialogOpen(true);
   };
 
   const exportToCSV = () => {
@@ -280,7 +294,11 @@ export default function FinancePage() {
 
   const paymentColumns = getPaymentColumns(handleMarkAsPaid);
   const expenseColumns = getExpenseColumns(handleEditExpense, handleDeleteExpense);
-  const transferColumns = getTransferColumns(handleViewReceipt);
+  const transferColumns = getTransferColumns(
+    handleViewReceipt,
+    handleEditTransfer,
+    handleDeleteTransfer
+  );
   const employeeServiceColumns = getEmployeeServiceColumns();
 
   if (isLoading) {
@@ -466,6 +484,18 @@ export default function FinancePage() {
         open={isReceiptDialogOpen}
         onOpenChange={setIsReceiptDialogOpen}
         transfer={selectedTransfer}
+      />
+
+      <TransferDeleteDialog
+        open={isDeleteTransferDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteTransferDialogOpen(open);
+          if (!open) {
+            setTransferToDelete(null);
+          }
+        }}
+        transfer={transferToDelete}
+        onSuccess={handleSuccess}
       />
     </div>
   );

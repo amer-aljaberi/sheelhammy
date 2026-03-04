@@ -3,7 +3,7 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye, Trash2 } from "lucide-react";
+import { Edit, Eye, Trash2, FileText } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export type Student = {
@@ -133,7 +133,14 @@ export function getStudentColumns(
         const student = row.original;
         return (
           <div className="flex items-center gap-2">
-            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.location.href = `/admin/students/${student.id}/orders`}
+              title="عرض جميع الطلبات"
+            >
+              <FileText className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"

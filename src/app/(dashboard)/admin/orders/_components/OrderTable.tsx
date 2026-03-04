@@ -3,14 +3,16 @@
 import React from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Edit, FileText, Eye, Trash2 } from "lucide-react";
+import { Edit, FileText, Eye, Trash2, ExternalLink } from "lucide-react";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useRouter as useNextRouter } from "next/navigation";
 
 export type Order = {
   id: string;
   orderNumber: string;
   studentName: string;
+  studentId?: string; // إضافة studentId للوصول إلى صفحة الطالب
   service: string;
   employeeName: string;
   referrerName?: string | null;
@@ -39,7 +41,8 @@ export function getOrderColumns(
   onRequestRevision: (order: Order) => void,
   onMarkCompleted: (orderId: string) => void,
   onView: (order: Order) => void,
-  onDelete: (orderId: string) => void
+  onDelete: (orderId: string) => void,
+  router?: ReturnType<typeof useNextRouter>
 ): ColumnDef<Order>[] {
   return [
     {
@@ -49,6 +52,29 @@ export function getOrderColumns(
     {
       accessorKey: "studentName",
       header: "الطالب",
+      cell: ({ row }) => {
+        const order = row.original;
+        
+        return (
+          <div className="flex items-center gap-2">
+            <span>{order.studentName}</span>
+            {order.studentId && router && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/admin/students/${order.studentId}/orders`);
+                }}
+                title="عرض جميع طلبات الطالب"
+                className="h-6 w-6 p-0"
+              >
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
     {
       accessorKey: "service",

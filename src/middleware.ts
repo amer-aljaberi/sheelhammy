@@ -53,7 +53,11 @@ export async function middleware(request: NextRequest) {
     // Check if user can access this route
     if (!canAccessRoute(role, pathname, permissions)) {
       const redirectPath = getRedirectPath(role);
-      return NextResponse.redirect(new URL(redirectPath, request.url));
+      
+      // Prevent redirect loop - don't redirect if already on the redirect path
+      if (pathname !== redirectPath && !pathname.startsWith(redirectPath + "/")) {
+        return NextResponse.redirect(new URL(redirectPath, request.url));
+      }
     }
   }
 

@@ -67,6 +67,7 @@ export function OrderForm({
   const [formData, setFormData] = useState({
     studentId: "",
     serviceId: "",
+    customServiceName: "", // اسم الخدمة المخصصة
     employeeId: "",
     referrerId: "",
     totalPrice: "",
@@ -99,6 +100,7 @@ export function OrderForm({
       setFormData({
         studentId: "",
         serviceId: "",
+        customServiceName: "",
         employeeId: "",
         referrerId: savedReferrerId || "",
         totalPrice: "",
@@ -149,10 +151,11 @@ export function OrderForm({
       // Calculate paid amount from installments if available
       const totalPaid = installments.length > 0 ? installments.reduce((a, b) => a + b, 0) : 0;
       const originalTotal = orderData.totalPrice || 0;
-      
+
       setFormData({
         studentId: orderData.studentId || "",
         serviceId: orderData.serviceId || "",
+        customServiceName: orderData.customServiceName || "",
         employeeId: orderData.employeeId || "",
         referrerId: orderData.referrerId || "",
         totalPrice: orderData.totalPrice?.toString() || "",
@@ -222,12 +225,20 @@ export function OrderForm({
           return;
         }
 
+        // Validate custom service name if custom service is selected
+        if (formData.serviceId === "custom" && !formData.customServiceName) {
+          toast.error("يرجى إدخال اسم الخدمة المخصصة");
+          setIsLoading(false);
+          return;
+        }
+
         const response = await fetch("/api/admin/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
             studentId: formData.studentId,
-            serviceId: formData.serviceId,
+            serviceId: formData.serviceId === "custom" ? "custom" : formData.serviceId,
+            customServiceName: formData.serviceId === "custom" ? formData.customServiceName : null,
             employeeId: formData.employeeId === "none" || formData.employeeId === "" ? null : formData.employeeId,
             referrerId: formData.referrerId === "none" || formData.referrerId === "" ? null : formData.referrerId,
             totalPrice: parseFloat(formData.totalPrice),
@@ -307,19 +318,39 @@ export function OrderForm({
                 <div>
                   <Label>الخدمة</Label>
                   <Combobox
-                    options={services.map((service) => ({
-                      value: service.id,
-                      label: service.title,
-                    }))}
+                    options={[
+                      { value: "custom", label: "خدمة مخصصة" },
+                      ...services.map((service) => ({
+                        value: service.id,
+                        label: service.title,
+                      })),
+                    ]}
                     value={formData.serviceId}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, serviceId: value })
+                      setFormData({ 
+                        ...formData, 
+                        serviceId: value,
+                        customServiceName: value === "custom" ? formData.customServiceName : ""
+                      })
                     }
                     placeholder="اختر الخدمة"
                     searchPlaceholder="ابحث عن خدمة..."
                     emptyText="لا توجد خدمات"
                     required
                   />
+                  {formData.serviceId === "custom" && (
+                    <div className="mt-2">
+                      <Label>اسم الخدمة المخصصة</Label>
+                      <Input
+                        value={formData.customServiceName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, customServiceName: e.target.value })
+                        }
+                        placeholder="أدخل اسم الخدمة المخصصة"
+                        required={formData.serviceId === "custom"}
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -398,7 +429,7 @@ export function OrderForm({
                 {formData.paymentType === "installments" && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
+                  <div>
                         <Label>المبلغ المدفوع</Label>
                         <Input
                           type="number"
@@ -499,21 +530,21 @@ export function OrderForm({
                     )}
                     <div>
                       <Label>الأقساط (يدوي - مثال: 500, 100, 400)</Label>
-                      <Input
-                        placeholder="500, 100, 400"
-                        value={formData.paymentInstallments.join(", ")}
-                        onChange={(e) => {
-                          const values = e.target.value
-                            .split(",")
-                            .map((v) => parseFloat(v.trim()))
-                            .filter((v) => !isNaN(v));
-                          setFormData({ ...formData, paymentInstallments: values });
-                        }}
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        المجموع: {formData.paymentInstallments.reduce((a, b) => a + b, 0).toFixed(2)} د.أ
-                      </p>
-                    </div>
+                    <Input
+                      placeholder="500, 100, 400"
+                      value={formData.paymentInstallments.join(", ")}
+                      onChange={(e) => {
+                        const values = e.target.value
+                          .split(",")
+                          .map((v) => parseFloat(v.trim()))
+                          .filter((v) => !isNaN(v));
+                        setFormData({ ...formData, paymentInstallments: values });
+                      }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      المجموع: {formData.paymentInstallments.reduce((a, b) => a + b, 0).toFixed(2)} د.أ
+                    </p>
+                  </div>
                   </>
                 )}
                 <div>
@@ -741,7 +772,7 @@ export function OrderForm({
                 {formData.paymentType === "installments" && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
+                  <div>
                         <Label>المبلغ المدفوع</Label>
                         <Input
                           type="number"
@@ -842,21 +873,21 @@ export function OrderForm({
                     )}
                     <div>
                       <Label>الأقساط (يدوي - مثال: 500, 100, 400)</Label>
-                      <Input
-                        placeholder="500, 100, 400"
-                        value={formData.paymentInstallments.join(", ")}
-                        onChange={(e) => {
-                          const values = e.target.value
-                            .split(",")
-                            .map((v) => parseFloat(v.trim()))
-                            .filter((v) => !isNaN(v));
-                          setFormData({ ...formData, paymentInstallments: values });
-                        }}
-                      />
+                    <Input
+                      placeholder="500, 100, 400"
+                      value={formData.paymentInstallments.join(", ")}
+                      onChange={(e) => {
+                        const values = e.target.value
+                          .split(",")
+                          .map((v) => parseFloat(v.trim()))
+                          .filter((v) => !isNaN(v));
+                        setFormData({ ...formData, paymentInstallments: values });
+                      }}
+                    />
                       <p className="text-xs text-gray-500 mt-1">
                         المجموع: {formData.paymentInstallments.reduce((a, b) => a + b, 0).toFixed(2)} د.أ
                       </p>
-                    </div>
+                  </div>
                   </>
                 )}
                 <div>

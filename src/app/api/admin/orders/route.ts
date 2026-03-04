@@ -15,11 +15,13 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const serviceId = searchParams.get("serviceId");
     const studentId = searchParams.get("studentId");
+    const employeeId = searchParams.get("employeeId");
 
     const where: any = {};
     if (status) where.status = status as OrderStatus;
     if (serviceId) where.serviceId = serviceId;
     if (studentId) where.studentId = studentId;
+    if (employeeId) where.employeeId = employeeId;
 
     const orders = await prisma.order.findMany({
       where,
@@ -74,6 +76,7 @@ export async function GET(request: NextRequest) {
         id: order.id,
         orderNumber: order.orderNumber,
         studentName: order.student.name,
+        studentId: order.studentId, // إضافة studentId
         service: order.service.title,
         employeeName: order.employee?.name || "غير معين",
         employeeId: order.employeeId,
@@ -115,6 +118,7 @@ export async function POST(request: NextRequest) {
     const {
       studentId,
       serviceId,
+      customServiceName,
       employeeId,
       referrerId,
       totalPrice,
@@ -132,9 +136,49 @@ export async function POST(request: NextRequest) {
       description,
     } = body;
 
-    if (!studentId || !serviceId || !totalPrice) {
+    if (!studentId || !totalPrice) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Handle custom service
+    let finalServiceId = serviceId;
+    if (serviceId === "custom" || !serviceId) {
+      if (!customServiceName) {
+        return NextResponse.json(
+          { error: "Custom service name is required" },
+          { status: 400 }
+        );
+      }
+      
+      // Find or create a category for custom services (or use first category)
+      const category = await prisma.category.findFirst();
+      if (!category) {
+        return NextResponse.json(
+          { error: "No category found. Please create a category first." },
+          { status: 400 }
+        );
+      }
+
+      // Create a temporary service for custom orders
+      const customService = await prisma.service.create({
+        data: {
+          title: customServiceName,
+          description: description || customServiceName,
+          shortDescription: customServiceName,
+          categoryId: category.id,
+          isActive: true,
+        },
+      });
+      
+      finalServiceId = customService.id;
+    }
+
+    if (!finalServiceId) {
+      return NextResponse.json(
+        { error: "Service ID is required" },
         { status: 400 }
       );
     }
@@ -160,7 +204,7 @@ export async function POST(request: NextRequest) {
       data: {
         orderNumber,
         studentId,
-        serviceId,
+        serviceId: finalServiceId,
         employeeId: employeeId || null,
         referrerId: referrerId || null,
         referrerCommission,

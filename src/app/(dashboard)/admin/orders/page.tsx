@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable } from "@/components/common/data-table/DataTable";
 import { Button } from "@/components/ui/button";
 import { Plus, Download } from "lucide-react";
 import { Order, getOrderColumns } from "./_components/OrderTable";
 import { OrderForm } from "./_components/OrderForm";
+import { MultiServiceOrderForm } from "./_components/MultiServiceOrderForm";
 import { RevisionDialog } from "./_components/RevisionDialog";
 import { OrderViewDialog } from "./_components/OrderViewDialog";
 import { toast } from "sonner";
@@ -38,12 +40,14 @@ type Employee = {
 };
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isMultiServiceDialogOpen, setIsMultiServiceDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isRevisionDialogOpen, setIsRevisionDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -270,7 +274,8 @@ export default function OrdersPage() {
     handleRequestRevision,
     handleMarkCompleted,
     handleView,
-    handleDelete
+    handleDelete,
+    router
   );
 
   if (isLoading) {
@@ -296,9 +301,13 @@ export default function OrdersPage() {
               <Download className="h-4 w-4 ml-2" />
               تصدير
             </Button>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 ml-2" />
-              طلب جديد
+              طلب واحد
+            </Button>
+            <Button onClick={() => setIsMultiServiceDialogOpen(true)}>
+              <Plus className="h-4 w-4 ml-2" />
+              طلبات متعددة
             </Button>
           </>
         }
@@ -331,6 +340,15 @@ export default function OrdersPage() {
       <OrderForm
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
+        students={students}
+        services={services}
+        employees={employees}
+        onSuccess={handleSuccess}
+      />
+
+      <MultiServiceOrderForm
+        open={isMultiServiceDialogOpen}
+        onOpenChange={setIsMultiServiceDialogOpen}
         students={students}
         services={services}
         employees={employees}
