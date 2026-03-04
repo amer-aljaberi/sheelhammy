@@ -332,17 +332,15 @@ export function ServicesList() {
       {openIndex !== null && activeService && modalData && (
         <DetailsMoldals open={true} title={activeService.title} onClose={() => setOpenIndex(null)}>
           <div dir="rtl" className="space-y-4 py-1">
-            {(activeService.shortDescription || !activeService.detailedDescription) && (
+            {activeService.shortDescription && (
               <ModalBlock icon="solar:stars-bold" label="ملخّص سريع">
                 <p className="text-gray-600 text-sm leading-relaxed">{modalData.summary}</p>
               </ModalBlock>
             )}
 
-            {activeService.detailedDescription && (
-              <ModalBlock icon="solar:document-text-bold" label="الوصف التفصيلي">
-                <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{modalData.detailedDescription}</p>
-              </ModalBlock>
-            )}
+            <ModalBlock icon="solar:document-text-bold" label="الوصف التفصيلي">
+              <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{modalData.detailedDescription}</p>
+            </ModalBlock>
 
             <ModalBlock icon="solar:shield-check-bold" label="ماذا ستحصل عليه">
               <div className="grid grid-cols-1 gap-2">

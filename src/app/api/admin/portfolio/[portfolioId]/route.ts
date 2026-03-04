@@ -54,14 +54,14 @@ export async function PATCH(
     const { title, description, image, link, file, academicLevel, date, countries } = body;
 
     const updateData: any = {};
-    if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description || null;
-    if (image !== undefined) updateData.image = image || null;
-    if (link !== undefined) updateData.link = link || null;
-    if (file !== undefined) updateData.file = file || null;
+    if (title !== undefined) updateData.title = title.trim();
+    if (description !== undefined) updateData.description = description?.trim() || null;
+    if (image !== undefined) updateData.image = image?.trim() || null;
+    if (link !== undefined) updateData.link = link?.trim() || null;
+    if (file !== undefined) updateData.file = file?.trim() || null;
     if (academicLevel !== undefined) updateData.academicLevel = academicLevel || null;
     if (date !== undefined) updateData.date = date ? new Date(date) : null;
-    if (countries !== undefined) updateData.countries = Array.isArray(countries) ? countries : Prisma.JsonNull;
+    if (countries !== undefined) updateData.countries = Array.isArray(countries) && countries.length > 0 ? countries : Prisma.JsonNull;
 
     const portfolioItem = await prisma.portfolio.update({
       where: { id: portfolioId },

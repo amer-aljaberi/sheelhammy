@@ -109,8 +109,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: secret || "fallback-secret-for-development-only-change-in-production",
   trustHost: true,
   debug: process.env.NODE_ENV === "development",
+  basePath: "/api/auth",
 });

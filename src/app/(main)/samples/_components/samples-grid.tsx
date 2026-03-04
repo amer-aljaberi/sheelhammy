@@ -142,6 +142,7 @@ export function SamplesGrid() {
         const response = await fetch("/api/portfolio");
         if (!response.ok) throw new Error("Failed to fetch portfolio");
         const data = await response.json();
+        console.log(data);
         setPortfolioItems(data);
       } catch (error) {
         console.error("Error fetching portfolio:", error);

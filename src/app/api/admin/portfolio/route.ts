@@ -47,14 +47,14 @@ export async function POST(request: NextRequest) {
 
     const portfolioItem = await prisma.portfolio.create({
       data: {
-        title,
-        description: description || null,
-        image: image || null,
-        link: link || null,
-        file: file || null,
+        title: title.trim(),
+        description: description?.trim() || null,
+        image: image?.trim() || null,
+        link: link?.trim() || null,
+        file: file?.trim() || null,
         academicLevel: academicLevel || null,
         date: date ? new Date(date) : null,
-        countries: Array.isArray(countries) ? countries : Prisma.JsonNull,
+        countries: Array.isArray(countries) && countries.length > 0 ? countries : Prisma.JsonNull,
       },
     });
 

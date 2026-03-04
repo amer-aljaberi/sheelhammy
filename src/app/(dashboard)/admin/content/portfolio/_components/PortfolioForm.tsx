@@ -51,33 +51,44 @@ export function PortfolioForm({
   });
 
   useEffect(() => {
-    if (portfolioItem) {
-      const item = portfolioItem as any;
-      setFormData({
-        title: portfolioItem.title,
-        description: portfolioItem.description || "",
-        image: portfolioItem.image || "",
-        link: portfolioItem.link || "",
-        file: item.file || "",
-        academicLevel: item.academicLevel || "",
-        date: item.date ? new Date(item.date).toISOString().split('T')[0] : "",
-      });
-      setCountries(
-        item.countries && Array.isArray(item.countries)
-          ? item.countries
-          : []
-      );
-    } else {
-      setFormData({
-        title: "",
-        description: "",
-        image: "",
-        link: "",
-        file: "",
-        academicLevel: "",
-        date: "",
-      });
-      setCountries([]);
+    if (open) {
+      if (portfolioItem) {
+        const item = portfolioItem as any;
+        setFormData({
+          title: portfolioItem.title || "",
+          description: portfolioItem.description || "",
+          image: portfolioItem.image || "",
+          link: portfolioItem.link || "",
+          file: item.file || "",
+          academicLevel: item.academicLevel || "",
+          date: item.date ? new Date(item.date).toISOString().split('T')[0] : "",
+        });
+        // Parse countries if it's a JSON string
+        let countriesArray: string[] = [];
+        if (item.countries) {
+          if (Array.isArray(item.countries)) {
+            countriesArray = item.countries;
+          } else if (typeof item.countries === 'string') {
+            try {
+              countriesArray = JSON.parse(item.countries);
+            } catch {
+              countriesArray = [];
+            }
+          }
+        }
+        setCountries(countriesArray);
+      } else {
+        setFormData({
+          title: "",
+          description: "",
+          image: "",
+          link: "",
+          file: "",
+          academicLevel: "",
+          date: "",
+        });
+        setCountries([]);
+      }
     }
   }, [portfolioItem, open]);
 
@@ -98,10 +109,10 @@ export function PortfolioForm({
         },
         body: JSON.stringify({
           title: formData.title,
-          description: formData.description || null,
-          image: formData.image || null,
-          link: formData.link || null,
-          file: formData.file || null,
+          description: formData.description?.trim() || null,
+          image: formData.image?.trim() || null,
+          link: formData.link?.trim() || null,
+          file: formData.file?.trim() || null,
           academicLevel: formData.academicLevel || null,
           date: formData.date || null,
           countries: countries.length > 0 ? countries : null,
@@ -167,9 +178,10 @@ export function PortfolioForm({
             <div>
               <FileUploader
                 value={formData.image || undefined}
-                onChange={(url) =>
-                  setFormData({ ...formData, image: url as string || "" })
-                }
+                onChange={(url) => {
+                  const imageUrl = Array.isArray(url) ? url[0] : url;
+                  setFormData({ ...formData, image: imageUrl || "" });
+                }}
                 accept="image/*"
                 multiple={false}
                 maxSize={5}
@@ -178,6 +190,11 @@ export function PortfolioForm({
                 disabled={isLoading}
                 type="image"
               />
+              {formData.image && (
+                <p className="text-xs text-gray-500 mt-1">
+                  الصورة الحالية: {formData.image}
+                </p>
+              )}
             </div>
             <div>
               <Label>رابط خارجي (اختياري)</Label>
@@ -223,9 +240,10 @@ export function PortfolioForm({
             <div>
               <FileUploader
                 value={formData.file || undefined}
-                onChange={(url) =>
-                  setFormData({ ...formData, file: url as string || "" })
-                }
+                onChange={(url) => {
+                  const fileUrl = Array.isArray(url) ? url[0] : url;
+                  setFormData({ ...formData, file: fileUrl || "" });
+                }}
                 accept="*/*"
                 multiple={false}
                 maxSize={10}
@@ -234,6 +252,11 @@ export function PortfolioForm({
                 disabled={isLoading}
                 type="file"
               />
+              {formData.file && (
+                <p className="text-xs text-gray-500 mt-1">
+                  الملف الحالي: {formData.file}
+                </p>
+              )}
             </div>
             <div>
               <Label>الدول المتاحة (اختياري)</Label>

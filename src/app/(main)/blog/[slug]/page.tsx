@@ -275,7 +275,7 @@ export default function BlogPostPage() {
  
           {post.image && (
             <div className="flex justify-center mb-12">
-              <div className="relative w-[600px] h-[600px]  overflow-hidden">
+              <div className="relative w-[600px] h-[300px]  overflow-hidden">
                 <Image
                   src={post.image}
                   alt={post.title}
