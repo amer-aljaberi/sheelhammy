@@ -47,7 +47,21 @@ export async function middleware(request: NextRequest) {
  
   if (!token) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
+    
+    // Validate callbackUrl - only allow internal paths
+    // Prevent external URLs, encoded paths like %2F%24, or invalid paths
+    const isValidPath = pathname && 
+      pathname.startsWith("/") && 
+      !pathname.startsWith("//") &&
+      !pathname.includes("http") &&
+      !pathname.includes("%2F%24") &&
+      pathname.length < 200; // reasonable path length limit
+    
+    if (isValidPath) {
+      loginUrl.searchParams.set("callbackUrl", pathname);
+    }
+    // If path is invalid, don't set callbackUrl (user will be redirected to dashboard after login)
+    
     return NextResponse.redirect(loginUrl);
   }
  

@@ -16,11 +16,12 @@ export interface SEOConfig {
 }
 
 const getSiteUrl = () => {
-  return process.env.NEXTAUTH_URL || process.env.SITE_URL || "https://sheelhammy.com";
+  return process.env.NEXTAUTH_URL || process.env.SITE_URL || "https://www.sheelhammy.com";
 };
 
 const getDefaultImage = () => {
-  return `${getSiteUrl()}/og-image.jpg`;
+ 
+  return `${getSiteUrl()}/logo.svg`;
 };
 
 export async function generateSEOMetadata(config: SEOConfig = {}): Promise<Metadata> {
@@ -102,6 +103,7 @@ export async function generateSEOMetadata(config: SEOConfig = {}): Promise<Metad
           width: 1200,
           height: 630,
           alt: title,
+          type: "image/svg+xml",
         },
       ],
       ...(config.publishedTime && { publishedTime: config.publishedTime }),
@@ -111,9 +113,18 @@ export async function generateSEOMetadata(config: SEOConfig = {}): Promise<Metad
       card: "summary_large_image",
       title,
       description,
-      images: [image],
+      images: [
+        {
+          url: image,
+          alt: title,
+        },
+      ],
       creator: "@sheelhammy",
       site: "@sheelhammy",
+    },
+    icons: {
+      icon: "/logo.svg",
+      apple: "/logo.svg",
     },
     alternates: {
       canonical: url,
