@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
           service: {
             select: {
               id: true,
-              name: true,
+              title: true,
             },
           },
         },
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       orderNumber: order.orderNumber,
       studentName: order.student.name,
       studentId: order.student.id,
-      service: order.service.name,
+      service: order.service.title,
       employeeName: order.employee?.name || "-",
       status: order.status,
       totalPrice: order.totalPrice,

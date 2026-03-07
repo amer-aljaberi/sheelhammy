@@ -137,7 +137,8 @@ export function getReferrerColumns(
       cell: ({ row }) => {
         const referrer = row.original;
         return (
-          <div className="text-sm">
+          <div className="text-sm"> 
+            <div>طلبات: {referrer.stats.totalOrders}</div>
             <div>إجمالي: {formatCurrency(referrer.stats.totalEarnings)}</div>
             <div>مدفوع: {formatCurrency(referrer.stats.totalPaid)}</div>
             <div className="font-semibold">

@@ -73,17 +73,15 @@ export async function PATCH(
       orderType,
       description,
     } = body;
-
-    // Calculate referrer commission if referrerId is provided or changed
+ 
     let referrerCommission = null;
     if (referrerId !== undefined) {
       if (referrerId) {
-        const referrer = await prisma.user.findUnique({
+        const referrer = await prisma.referrer.findUnique({
           where: { id: referrerId },
           select: { commissionRate: true },
         });
-        if (referrer?.commissionRate) {
-          // Get current order to calculate commission
+        if (referrer?.commissionRate) { 
           const currentOrder = await prisma.order.findUnique({
             where: { id: orderId },
             select: { totalPrice: true, discount: true },
@@ -130,8 +128,7 @@ export async function PATCH(
         employee: true,
       },
     });
-
-    // If status changed to REVISION, create notification
+ 
     if (status === OrderStatus.REVISION && order.employeeId) {
       await prisma.notification.create({
         data: {

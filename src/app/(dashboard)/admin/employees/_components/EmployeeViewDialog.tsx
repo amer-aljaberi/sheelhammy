@@ -12,10 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { Employee } from "./EmployeeTable";
-import { Loader2, Copy, Check } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 type EmployeeDetail = {
@@ -33,9 +31,6 @@ type EmployeeDetail = {
   services?: any;
   academicLevels?: any;
   complaintsCount?: number;
-  isReferrer?: boolean;
-  referrerCode?: string | null;
-  commissionRate?: number | null;
   createdAt: string;
   updatedAt: string;
   assignedJobs: Array<{
@@ -66,7 +61,6 @@ export function EmployeeViewDialog({
 }: EmployeeViewDialogProps) {
   const [employeeDetail, setEmployeeDetail] = useState<EmployeeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (open && employee) {
@@ -103,9 +97,6 @@ export function EmployeeViewDialog({
         services: data.services,
         academicLevels: data.academicLevels,
         complaintsCount: data.complaintsCount || 0,
-        isReferrer: data.isReferrer || false,
-        referrerCode: data.referrerCode || null,
-        commissionRate: data.commissionRate || null,
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
         assignedJobs: data.assignedJobs?.map((job: any) => ({
@@ -143,15 +134,6 @@ export function EmployeeViewDialog({
 
   const pendingEarnings = totalEarnings - totalTransferred;
 
-  const copyReferrerLink = () => {
-    if (employeeDetail?.referrerCode) {
-      const link = `${typeof window !== "undefined" ? window.location.origin : ""}/ref/${employeeDetail.referrerCode}`;
-      navigator.clipboard.writeText(link);
-      setCopied(true);
-      toast.success("تم نسخ رابط المندوب");
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -257,22 +239,6 @@ export function EmployeeViewDialog({
                     <p className="text-sm text-gray-600 dark:text-gray-400">نسبة الربح الافتراضية</p>
                     <p className="font-semibold">{employeeDetail.defaultProfitRate || 40}%</p>
                   </div>
-                  {employeeDetail.isReferrer && (
-                    <>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">مندوب</p>
-                        <p className="font-semibold text-blue-600">نعم</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">كود المندوب</p>
-                        <p className="font-semibold">{employeeDetail.referrerCode || "-"}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">نسبة العمولة</p>
-                        <p className="font-semibold">{employeeDetail.commissionRate || 0}%</p>
-                      </div>
-                    </>
-                  )}
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">تاريخ الإنشاء</p>
                     <p className="font-semibold">{formatDateTime(employeeDetail.createdAt)}</p>
@@ -284,48 +250,6 @@ export function EmployeeViewDialog({
                 </div>
               </CardContent>
             </Card>
-
-            {/* Referrer Link */}
-            {employeeDetail.isReferrer && employeeDetail.referrerCode && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>رابط المندوب</CardTitle>
-                  <CardDescription>
-                    رابط خاص للمندوب - عندما يفتح الطالب هذا الرابط، يتم ربط طلباته بهذا المندوب
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/ref/${employeeDetail.referrerCode}`}
-                      readOnly
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={copyReferrerLink}
-                      className="flex-shrink-0"
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="h-4 w-4 ml-2" />
-                          تم النسخ
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4 ml-2" />
-                          نسخ
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    عمولة المندوب: {employeeDetail.commissionRate || 0}% من قيمة الطلب بعد الخصم
-                  </p>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Statistics */}
             <Card>

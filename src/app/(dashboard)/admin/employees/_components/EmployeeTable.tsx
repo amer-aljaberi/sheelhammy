@@ -23,9 +23,6 @@ export type Employee = {
   services?: any;
   academicLevels?: any;
   complaintsCount?: number;
-  isReferrer?: boolean;
-  referrerCode?: string | null;
-  commissionRate?: number | null;
   currentLoad: number;
   totalOrders: number;
   totalProfit: number;
@@ -153,31 +150,6 @@ export function getEmployeeColumns(
       accessorKey: "defaultProfitRate",
       header: "نسبة الربح",
       cell: ({ row }) => `${row.original.defaultProfitRate || 40}%`,
-    },
-    {
-      accessorKey: "isReferrer",
-      header: "مندوب",
-      cell: ({ row }) => {
-        const employee = row.original;
-        if (!employee.isReferrer) return "-";
-        return (
-          <div className="space-y-1">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700">
-              مندوب
-            </Badge>
-            {employee.referrerCode && (
-              <div className="text-xs text-gray-500">
-                {employee.referrerCode}
-              </div>
-            )}
-            {employee.commissionRate && (
-              <div className="text-xs text-gray-500">
-                عمولة: {employee.commissionRate}%
-              </div>
-            )}
-          </div>
-        );
-      },
     },
     {
       accessorKey: "isActive",

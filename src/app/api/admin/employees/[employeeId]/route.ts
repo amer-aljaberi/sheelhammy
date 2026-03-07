@@ -94,24 +94,7 @@ export async function PATCH(
     const { employeeId } = await params;
     const body = await request.json();
 
-    const { name, email, phone, phoneCountryCode, role, defaultProfitRate, isActive, country, specialization, services, academicLevels, isReferrer, referrerCode, commissionRate, permissions } = body;
-
-    // Generate referrer code if isReferrer is true and code is empty
-    let finalReferrerCode = referrerCode;
-    if (isReferrer !== undefined && isReferrer && !referrerCode) {
-      // Get current employee name to generate code
-      const currentEmployee = await prisma.user.findUnique({
-        where: { id: employeeId },
-        select: { name: true },
-      });
-      if (currentEmployee) {
-        const namePart = (name || currentEmployee.name).replace(/\s/g, "").substring(0, 3).toUpperCase();
-        const randomPart = Math.floor(100 + Math.random() * 900);
-        finalReferrerCode = `${namePart}${randomPart}`;
-      }
-    } else if (isReferrer !== undefined && !isReferrer) {
-      finalReferrerCode = null;
-    }
+    const { name, email, phone, phoneCountryCode, role, defaultProfitRate, isActive, country, specialization, services, academicLevels, permissions } = body;
 
     // Update user
     const userUpdateData: any = {};
@@ -141,16 +124,6 @@ export async function PATCH(
       if (currentUser?.role === Role.ADMIN || role === Role.ADMIN) {
         userUpdateData.permissions = (permissions && permissions.length > 0) ? permissions : null;
       }
-    }
-    if (isReferrer !== undefined) {
-      userUpdateData.isReferrer = isReferrer;
-      userUpdateData.referrerCode = isReferrer ? (finalReferrerCode || null) : null;
-      userUpdateData.commissionRate = isReferrer ? (commissionRate || null) : null;
-    } else if (referrerCode !== undefined) {
-      userUpdateData.referrerCode = finalReferrerCode;
-    }
-    if (commissionRate !== undefined && isReferrer !== false) {
-      userUpdateData.commissionRate = commissionRate || null;
     }
 
     const employee = await prisma.user.update({

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 const WHATSAPP_NUMBER = "962781858647";
 
-export default function WhatsAppPage() {
+function WhatsAppRedirect() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const ref = searchParams?.get("ref");
@@ -59,5 +59,21 @@ export default function WhatsAppPage() {
         <p className="text-lg">جاري التوجيه إلى واتساب...</p>
       </div>
     </div>
+  );
+}
+
+export default function WhatsAppPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg">جاري التوجيه إلى واتساب...</p>
+          </div>
+        </div>
+      }
+    >
+      <WhatsAppRedirect />
+    </Suspense>
   );
 }

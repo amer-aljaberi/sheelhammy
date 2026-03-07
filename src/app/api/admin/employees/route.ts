@@ -80,9 +80,6 @@ export async function GET(request: NextRequest) {
           services: employee.services,
           academicLevels: employee.academicLevels,
           complaintsCount: employee.complaintsCount || 0,
-          isReferrer: employee.isReferrer || false,
-          referrerCode: employee.referrerCode || null,
-          commissionRate: employee.commissionRate || null,
           currentLoad: employee.assignedJobs.length,
           totalOrders: completedOrders,
           totalProfit: totalProfit._sum.employeeProfit || 0,
@@ -118,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, password, phone, phoneCountryCode, role, defaultProfitRate, country, specialization, services, academicLevels, isReferrer, referrerCode, commissionRate, permissions } = body;
+    const { name, email, password, phone, phoneCountryCode, role, defaultProfitRate, country, specialization, services, academicLevels, permissions } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -157,9 +154,6 @@ export async function POST(request: NextRequest) {
         specialization: specialization || null,
         services: services ? services : null,
         academicLevels: academicLevels ? academicLevels : null,
-        isReferrer: isReferrer || false,
-        referrerCode: isReferrer ? (referrerCode || null) : null,
-        commissionRate: isReferrer ? (commissionRate || null) : null,
         permissions: (role === Role.ADMIN && permissions && permissions.length > 0) ? permissions : null,
       },
     });
