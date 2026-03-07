@@ -10,6 +10,9 @@ import {
   Bell,
   Clock,
   AlertTriangle,
+  Users,
+  TrendingUp,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -23,6 +26,17 @@ type DashboardStats = {
   pendingEarnings: number;
   totalEarnings: number;
   completedOrders: number;
+  referrerStats: {
+    referrerId: string;
+    referrerCode: string;
+    totalReferrers: number;
+    totalReferrerOrders: number;
+    totalReferrerEarnings: number;
+    totalReferrerPaid: number;
+    remainingReferrerEarnings: number;
+    activeReferrerOrders: number;
+    commissionRate: number | null;
+  } | null;
 };
 
 type Notification = {
@@ -131,6 +145,114 @@ export default function DashboardPage() {
           variant="info"
         />
       </div>
+
+      {/* Referrer Stats Section */}
+      {stats.referrerStats && (
+        <Card className="border-2 border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-blue-500" />
+              إحصائيات الإحالة
+              <Badge variant="outline" className="mr-2">
+                {stats.referrerStats.referrerCode}
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              ملخص أداءك كمندوب وإحصائيات الإحالات
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-800">
+                  <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    إجمالي الطلبات
+                  </p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {stats.referrerStats.totalReferrerOrders}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
+                <div className="p-2 rounded-full bg-green-100 dark:bg-green-800">
+                  <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    إجمالي الأرباح
+                  </p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {formatCurrency(stats.referrerStats.totalReferrerEarnings)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-800">
+                  <DollarSign className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    المدفوع
+                  </p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {formatCurrency(stats.referrerStats.totalReferrerPaid)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                <div className="p-2 rounded-full bg-orange-100 dark:bg-orange-800">
+                  <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    المتبقي
+                  </p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    {formatCurrency(stats.referrerStats.remainingReferrerEarnings)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    نسبة العمولة
+                  </p>
+                  <p className="text-xl font-bold">
+                    {stats.referrerStats.commissionRate
+                      ? `${stats.referrerStats.commissionRate}%`
+                      : "غير محدد"}
+                  </p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    الطلبات النشطة
+                  </p>
+                  <p className="text-xl font-bold">
+                    {stats.referrerStats.activeReferrerOrders}
+                  </p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                    كود المندوب
+                  </p>
+                  <p className="text-xl font-bold font-mono">
+                    {stats.referrerStats.referrerCode}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Notifications */}
       <Card>

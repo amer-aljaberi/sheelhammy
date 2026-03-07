@@ -54,9 +54,6 @@ export function EmployeeForm({
     specialization: (employee as any)?.specialization || "",
     services: [] as string[],
     academicLevels: [] as string[],
-    isReferrer: (employee as any)?.isReferrer || false,
-    referrerCode: (employee as any)?.referrerCode || "",
-    commissionRate: (employee as any)?.commissionRate || null,
     permissions: [] as string[],
   });
 
@@ -134,9 +131,6 @@ export function EmployeeForm({
           specialization: emp.specialization || "",
           services: servicesArray,
           academicLevels: academicLevelsArray,
-          isReferrer: emp.isReferrer || false,
-          referrerCode: emp.referrerCode || "",
-          commissionRate: emp.commissionRate ?? null,
           permissions: permissionsArray,
         });
       } else {
@@ -152,9 +146,6 @@ export function EmployeeForm({
           specialization: "",
           services: [],
           academicLevels: [],
-          isReferrer: false,
-          referrerCode: "",
-          commissionRate: null,
           permissions: [],
         });
       }
@@ -171,17 +162,6 @@ export function EmployeeForm({
         : "/api/admin/employees";
       const method = employee ? "PATCH" : "POST";
 
-      // Generate referrer code if isReferrer is true and code is empty
-      let referrerCode = formData.referrerCode;
-      if (formData.isReferrer && !referrerCode) {
-        // Generate code from name (first 3 letters + random 3 numbers)
-        const namePart = formData.name.replace(/\s/g, "").substring(0, 3).toUpperCase();
-        const randomPart = Math.floor(100 + Math.random() * 900);
-        referrerCode = `${namePart}${randomPart}`;
-      } else if (!formData.isReferrer) {
-        referrerCode = null;
-      }
-
       const body: any = {
         name: formData.name,
         email: formData.email,
@@ -193,9 +173,6 @@ export function EmployeeForm({
         specialization: formData.specialization || null,
         services: formData.services.length > 0 ? formData.services : null,
         academicLevels: formData.academicLevels.length > 0 ? formData.academicLevels : null,
-        isReferrer: formData.isReferrer,
-        referrerCode: referrerCode || null,
-        commissionRate: formData.isReferrer ? (formData.commissionRate || null) : null,
         permissions: formData.role === "ADMIN" && formData.permissions.length > 0 ? formData.permissions : null,
       };
 
@@ -525,85 +502,6 @@ export function EmployeeForm({
                   </div>
                 ))}
               </div>
-            </div>
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-4">إعدادات المندوب</h3>
-              <div className="flex items-center space-x-2 space-x-reverse mb-4">
-                <input
-                  type="checkbox"
-                  id="isReferrer"
-                  checked={formData.isReferrer}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      isReferrer: e.target.checked,
-                      referrerCode: e.target.checked && !formData.referrerCode
-                        ? `${formData.name.replace(/\s/g, "").substring(0, 3).toUpperCase()}${Math.floor(100 + Math.random() * 900)}`
-                        : formData.referrerCode,
-                    })
-                  }
-                  className="rounded"
-                />
-                <Label htmlFor="isReferrer" className="cursor-pointer">
-                  هذا الموظف مندوب (يجيب طلاب)
-                </Label>
-              </div>
-              {formData.isReferrer && (
-                <>
-                  <div>
-                    <Label>كود المندوب</Label>
-                    <Input
-                      value={formData.referrerCode}
-                      onChange={(e) =>
-                        setFormData({ ...formData, referrerCode: e.target.value.toUpperCase() })
-                      }
-                      placeholder="مثال: ABC123"
-                    />
-                    {formData.referrerCode && (
-                      <div className="mt-2 p-3 rounded-lg bg-blue-50 border border-blue-200">
-                        <p className="text-xs font-semibold text-blue-900 mb-1">رابط المندوب:</p>
-                        <div className="flex items-center gap-2">
-                          <code className="text-xs bg-white px-2 py-1 rounded border border-blue-300 text-blue-700 flex-1 break-all">
-                            https://www.sheelhammy.com/contact-us?ref={formData.referrerCode}
-                          </code>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const link = `https://www.sheelhammy.com/contact-us?ref=${formData.referrerCode}`;
-                              navigator.clipboard.writeText(link);
-                              toast.success("تم نسخ الرابط");
-                            }}
-                            className="flex-shrink-0"
-                          >
-                            <Icon icon="solar:copy-bold" className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <Label>نسبة العمولة (%)</Label>
-                    <Input
-                      type="number"
-                      value={formData.commissionRate || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          commissionRate: e.target.value ? Number(e.target.value) : null,
-                        })
-                      }
-                      min={0}
-                      max={100}
-                      placeholder="10"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      نسبة العمولة التي يحصل عليها المندوب على كل طلب
-                    </p>
-                  </div>
-                </>
-              )}
             </div>
           </div>
           <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">

@@ -61,11 +61,67 @@ export async function GET(request: NextRequest) {
     // Pending earnings = total earnings - transferred earnings
     const pendingEarnings = totalEarnings - transferredEarnings;
 
+    // Get referrer stats if employee is a referrer
+    const referrer = await prisma.referrer.findFirst({
+      where: {
+        sourceType: "employee",
+        sourceId: userId,
+        isActive: true,
+      },
+      include: {
+        orders: {
+          select: {
+            id: true,
+            referrerCommission: true,
+            status: true,
+            createdAt: true,
+          },
+        },
+        payments: {
+          select: {
+            id: true,
+            amount: true,
+            paymentDate: true,
+          },
+        },
+      },
+    });
+
+    let referrerStats = null;
+    if (referrer) {
+      const totalReferrerOrders = referrer.orders.length;
+      const totalReferrerEarnings = referrer.orders.reduce(
+        (sum, order) => sum + (order.referrerCommission || 0),
+        0
+      );
+      const totalReferrerPaid = referrer.payments.reduce(
+        (sum, payment) => sum + payment.amount,
+        0
+      );
+      const remainingReferrerEarnings = totalReferrerEarnings - totalReferrerPaid;
+      const activeReferrerOrders = referrer.orders.filter(
+        (order) => order.status !== "COMPLETED" && order.status !== "CANCELLED"
+      ).length;
+
+      referrerStats = {
+        referrerId: referrer.id,
+        referrerCode: referrer.code,
+        totalReferrers: 1, // الموظف نفسه مندوب
+        totalReferrerOrders,
+        totalReferrerEarnings,
+        totalReferrerPaid,
+        remainingReferrerEarnings,
+        activeReferrerOrders,
+        commissionRate: referrer.commissionRate,
+      };
+    }
+
     return NextResponse.json({
       inProgressOrders,
       pendingEarnings,
       totalEarnings,
       completedOrders,
+      referrerStats,
     });
   } catch (error: any) {
     console.error("Error fetching dashboard stats:", error);

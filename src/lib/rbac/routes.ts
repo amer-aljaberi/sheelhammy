@@ -54,10 +54,15 @@ export function canAccessRoute(role: Role, pathname: string, permissions?: strin
     }
   }
 
-  // EMPLOYEE - only dashboard access
+  // EMPLOYEE - dashboard and referrer access
   if (role === "EMPLOYEE") {
     // Dashboard routes are always accessible
     if (pathname.startsWith("/dashboard")) {
+      return true;
+    }
+    
+    // Referrer dashboard is accessible for employees
+    if (pathname.startsWith("/referrer")) {
       return true;
     }
     

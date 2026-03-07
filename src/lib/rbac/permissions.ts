@@ -9,6 +9,7 @@ export const ADMIN_PAGES: PagePermission[] = [
   { path: "/admin/orders", label: "إدارة الطلبات", category: "إدارة" },
   { path: "/admin/employees", label: "الموظفين", category: "إدارة" },
   { path: "/admin/students", label: "الطلاب", category: "إدارة" },
+  { path: "/admin/referrers", label: "المندوبين", category: "إدارة" },
   { path: "/admin/finance", label: "النظام المالي", category: "مالي" },
   { path: "/admin/content/services", label: "الخدمات", category: "المحتوى" },
   { path: "/admin/content/categories", label: "الفئات", category: "المحتوى" },

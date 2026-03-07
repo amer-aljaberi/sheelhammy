@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            referrerCode: true,
+            code: true,
             commissionRate: true,
           },
         },
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
         employeeName: order.employee?.name || "غير معين",
         employeeId: order.employeeId,
         referrerName: order.referrer?.name || null,
-        referrerCode: order.referrer?.referrerCode || null,
+        referrerCode: order.referrer?.code || null,
         referrerCommission: order.referrerCommission || null,
         status: order.status,
         totalPrice: order.totalPrice,
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
     // Calculate referrer commission if referrerId is provided
     let referrerCommission = null;
     if (referrerId) {
-      const referrer = await prisma.user.findUnique({
+      const referrer = await prisma.referrer.findUnique({
         where: { id: referrerId },
         select: { commissionRate: true },
       });

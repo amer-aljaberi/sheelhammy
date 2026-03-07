@@ -17,9 +17,10 @@ import {
   CalendarDays,
   Bell,
   Home,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DashboardSidebarProps {
   role: Role;
@@ -45,7 +46,29 @@ const employeeNavItems: NavItem[] = [
 export function DashboardSidebar({ role }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const navItems = employeeNavItems;
+  const [isReferrer, setIsReferrer] = useState(false);
+  
+  // Check if user is a referrer
+  useEffect(() => {
+    if (role === "EMPLOYEE") {
+      fetch("/api/referrer/dashboard/stats")
+        .then((res) => {
+          if (res.ok) {
+            setIsReferrer(true);
+          }
+        })
+        .catch(() => {
+          setIsReferrer(false);
+        });
+    }
+  }, [role]);
+
+  const navItems = [
+    ...employeeNavItems,
+    ...(isReferrer
+      ? [{ href: "/referrer", label: "لوحة تحكم المندوب", icon: Award, exact: true }]
+      : []),
+  ];
 
   return (
     <> 

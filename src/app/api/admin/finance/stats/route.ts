@@ -47,10 +47,25 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Total referrer commissions (from all orders)
+    const totalReferrerCommissions = await prisma.order.aggregate({
+      _sum: {
+        referrerCommission: true,
+      },
+    });
+
+    // Total paid referrer commissions (from ReferrerPayment)
+    const totalPaidReferrerCommissions = await prisma.referrerPayment.aggregate({
+      _sum: {
+        amount: true,
+      },
+    });
+
     // Calculate net profit
     const netProfit =
       (totalRevenue._sum.totalPrice || 0) -
       (totalEmployeeProfits._sum.employeeProfit || 0) -
+      (totalReferrerCommissions._sum.referrerCommission || 0) -
       (totalExpenses._sum.amount || 0);
 
     return NextResponse.json({
@@ -58,6 +73,8 @@ export async function GET(request: NextRequest) {
       totalExpenses: totalExpenses._sum.amount || 0,
       totalTransfers: totalTransfers._sum.amount || 0,
       totalEmployeeProfits: totalEmployeeProfits._sum.employeeProfit || 0,
+      totalReferrerCommissions: totalReferrerCommissions._sum.referrerCommission || 0,
+      totalPaidReferrerCommissions: totalPaidReferrerCommissions._sum.amount || 0,
       netProfit,
     });
   } catch (error: any) {

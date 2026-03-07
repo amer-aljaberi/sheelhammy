@@ -23,17 +23,11 @@ model User {
   services          Json?      // Array of service IDs or names
   academicLevels    Json?      // Array: دبلوم/بكالوريوس/ماجستير/دكتوراه
   complaintsCount   Int        @default(0)
-  isReferrer        Boolean    @default(false) // هل هو مندوب
-  referrerCode      String?    @unique // كود المندوب للرابط
-  commissionRate    Float?     // نسبة العمولة للمندوب (%)
   permissions       Json?       
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
   assignedJobs      Order[]    @relation("EmployeeOrders")
-  referredOrders    Order[]    @relation("ReferrerOrders")
   transfers         Transfer[]
-
-  @@index([referrerCode], map: "User_referrerCode_idx")
 }
 
 model Student {
@@ -112,6 +106,81 @@ model Portfolio {
   updatedAt     DateTime @updatedAt
 }
 
+model Referrer {
+  id                String            @id @default(uuid())
+  name              String
+  phone             String?
+  phoneCountryCode  String?           @default("+962")
+  code              String            @unique // كود المندوب (amer01, ali02, etc.)
+  commissionRate    Float?            // نسبة العمولة (%)
+  isActive          Boolean           @default(true) // نشط / موقوف
+  country           String?
+  university        String?
+  academicYear      String?           // السنة الجامعية
+  grade             String?           // الصف الدراسي
+  importantNotes    String?           @db.Text // الأشياء الهامة
+  notes             String?           @db.Text // ملاحظات عامة
+  sourceType        String?           // employee / student / other
+  sourceId          String?           // ID من الجدول المصدر (User أو Student)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  orders            Order[]            @relation("ReferrerOrders")
+  payments          ReferrerPayment[]  @relation("ReferrerPayments")
+  referrals         Referral[]        @relation("ReferrerReferrals")
+
+  @@index([code], map: "Referrer_code_idx")
+  @@index([isActive], map: "Referrer_isActive_idx")
+}
+
+model ReferrerPayment {
+  id            String    @id @default(uuid())
+  referrerId    String
+  amount        Float
+  paymentType   String    // cash / installments
+  paymentDate   DateTime  @default(now())
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  referrer      Referrer  @relation("ReferrerPayments", fields: [referrerId], references: [id])
+
+  @@index([referrerId], map: "ReferrerPayment_referrerId_fkey")
+}
+
+model Referral {
+  id            String            @id @default(uuid())
+  referrerId    String
+  orderId       String?           // ربط الإحالة بالطلب عند إتمامها
+  name          String
+  email         String?
+  phone         String
+  service       String
+  message       String            @db.Text
+  academicLevel String?
+  subject       String?
+  university    String?
+  deadline      DateTime?
+  pagesOrWords  String?
+  language      String?
+  urgency       String?
+  filesLink     String?
+  status        ReferralStatus   @default(PENDING) // PENDING, COMPLETED, CANCELLED
+  notes         String?           @db.Text
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  referrer      Referrer          @relation("ReferrerReferrals", fields: [referrerId], references: [id])
+  order         Order?            @relation("ReferralOrders", fields: [orderId], references: [id])
+
+  @@index([referrerId], map: "Referral_referrerId_idx")
+  @@index([status], map: "Referral_status_idx")
+  @@index([orderId], map: "Referral_orderId_idx")
+}
+
+enum ReferralStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
 model Order {
   id                  String         @id @default(uuid())
   orderNumber         String         @unique
@@ -144,9 +213,10 @@ model Order {
   paymentRecords      PaymentRecord[]
   transfers           Transfer[]      @relation("TransferOrders")
   employee            User?          @relation("EmployeeOrders", fields: [employeeId], references: [id])
-  referrer            User?          @relation("ReferrerOrders", fields: [referrerId], references: [id])
+  referrer            Referrer?      @relation("ReferrerOrders", fields: [referrerId], references: [id])
   service             Service        @relation(fields: [serviceId], references: [id])
   student             Student        @relation(fields: [studentId], references: [id])
+  referrals           Referral[]     @relation("ReferralOrders")
 
   @@index([employeeId], map: "Order_employeeId_fkey")
   @@index([referrerId], map: "Order_referrerId_fkey")

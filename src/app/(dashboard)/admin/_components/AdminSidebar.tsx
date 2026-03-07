@@ -28,6 +28,7 @@ import {
   MessageSquare,
   Home,
   Book,
+  UserCog,
 } from "lucide-react";
 
 type NavItem = {
@@ -42,6 +43,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   "/admin/orders": ShoppingCart,
   "/admin/employees": UserCheck,
   "/admin/students": Users,
+  "/admin/referrers": UserCog,
   "/admin/content/categories": Tag,
   "/admin/content/services": Package,
   "/admin/content/testimonials": Star,

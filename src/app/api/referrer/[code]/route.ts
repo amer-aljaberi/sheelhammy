@@ -9,17 +9,18 @@ export async function GET(
   try {
     const { code } = await params;
 
-    const referrer = await prisma.user.findFirst({
+    const referrer = await prisma.referrer.findFirst({
       where: {
-        referrerCode: code,
-        isReferrer: true,
+        code: code.toUpperCase(),
         isActive: true,
       },
       select: {
         id: true,
         name: true,
-        referrerCode: true,
+        code: true,
         commissionRate: true,
+        phone: true,
+        phoneCountryCode: true,
       },
     });
 
@@ -30,7 +31,14 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(referrer);
+    return NextResponse.json({
+      id: referrer.id,
+      name: referrer.name,
+      referrerCode: referrer.code,
+      commissionRate: referrer.commissionRate,
+      phone: referrer.phone,
+      phoneCountryCode: referrer.phoneCountryCode,
+    });
   } catch (error: any) {
     console.error("Error verifying referrer:", error);
     return NextResponse.json(

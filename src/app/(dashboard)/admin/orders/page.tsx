@@ -39,12 +39,19 @@ type Employee = {
   name: string;
 };
 
+type Referrer = {
+  id: string;
+  name: string;
+  code: string;
+};
+
 export default function OrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [referrers, setReferrers] = useState<Referrer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isMultiServiceDialogOpen, setIsMultiServiceDialogOpen] = useState(false);
@@ -106,11 +113,24 @@ export default function OrdersPage() {
       setEmployees(data.map((emp: any) => ({
         id: emp.id,
         name: emp.name,
-        isReferrer: emp.isReferrer || false,
-        referrerCode: emp.referrerCode || null,
       })));
     } catch (error) {
       console.error("Error fetching employees:", error);
+    }
+  };
+
+  const fetchReferrers = async () => {
+    try {
+      const response = await fetch("/api/admin/referrers");
+      if (!response.ok) throw new Error("Failed to fetch referrers");
+      const data = await response.json();
+      setReferrers(data.map((ref: any) => ({
+        id: ref.id,
+        name: ref.name,
+        code: ref.code,
+      })));
+    } catch (error) {
+      console.error("Error fetching referrers:", error);
     }
   };
 
@@ -119,6 +139,7 @@ export default function OrdersPage() {
     fetchStudents();
     fetchServices();
     fetchEmployees();
+    fetchReferrers();
   }, []);
 
   const handleEdit = (order: Order) => {
@@ -338,6 +359,7 @@ export default function OrdersPage() {
       />
 
       <OrderForm
+        referrers={referrers}
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         students={students}
@@ -356,6 +378,7 @@ export default function OrdersPage() {
       />
 
       <OrderForm
+        referrers={referrers}
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         order={selectedOrder}

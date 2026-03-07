@@ -45,10 +45,9 @@ export async function POST(request: NextRequest) {
     // Find referrer if code provided
     let referrer = null;
     if (referrerCode) {
-      referrer = await prisma.user.findFirst({
+      referrer = await prisma.referrer.findFirst({
         where: {
-          referrerCode: referrerCode,
-          isReferrer: true,
+          code: referrerCode.toUpperCase(),
           isActive: true,
         },
         select: {
@@ -56,13 +55,33 @@ export async function POST(request: NextRequest) {
           name: true,
           phone: true,
           phoneCountryCode: true,
-          referrerCode: true,
+          code: true,
         },
       });
-    }
 
-    // Save contact request (you can create a ContactRequest model if needed)
-    // For now, we'll just log it and send WhatsApp to referrer
+      // Save referral if referrer found
+      if (referrer) {
+        await prisma.referral.create({
+          data: {
+            referrerId: referrer.id,
+            name,
+            email: email || null,
+            phone,
+            service,
+            message,
+            academicLevel: academicLevel || null,
+            subject: subject || null,
+            university: university || null,
+            deadline: deadline ? new Date(deadline) : null,
+            pagesOrWords: pagesOrWords || null,
+            language: language || null,
+            urgency: urgency || null,
+            filesLink: filesLink || null,
+            status: "PENDING",
+          },
+        });
+      }
+    }
 
     // Prepare WhatsApp message for referrer
     if (referrer && referrer.phone) {
@@ -101,6 +120,7 @@ export async function POST(request: NextRequest) {
           name: referrer.name,
           whatsappLink: referrerWhatsAppLink,
         },
+        referrerCode: referrer.code, // Return referrer code for saving
       });
     }
 

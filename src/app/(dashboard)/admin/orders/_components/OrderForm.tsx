@@ -39,8 +39,12 @@ type Service = {
 type Employee = {
   id: string;
   name: string;
-  isReferrer?: boolean;
-  referrerCode?: string | null;
+};
+
+type Referrer = {
+  id: string;
+  name: string;
+  code: string;
 };
 
 interface OrderFormProps {
@@ -50,6 +54,7 @@ interface OrderFormProps {
   students: Student[];
   services: Service[];
   employees: Employee[];
+  referrers?: Referrer[];
   onSuccess: () => void;
 }
 
@@ -60,6 +65,7 @@ export function OrderForm({
   students,
   services,
   employees,
+  referrers = [],
   onSuccess,
 }: OrderFormProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -94,15 +100,19 @@ export function OrderForm({
       fetchOrderData();
     } else if (open && !order) {
       // Create mode - reset form
-      // Check for referrer in localStorage (if student came from referrer link)
-      const savedReferrerId = typeof window !== "undefined" ? localStorage.getItem("referrerId") : null;
+      // Check for referrer code in localStorage (if student came from referrer link)
+      const savedReferrerCode = typeof window !== "undefined" ? localStorage.getItem("referrerCode") : null;
+      // Find referrer by code
+      const savedReferrer = savedReferrerCode 
+        ? referrers.find((r) => r.code === savedReferrerCode)
+        : null;
       
       setFormData({
         studentId: "",
         serviceId: "",
         customServiceName: "",
         employeeId: "",
-        referrerId: savedReferrerId || "",
+        referrerId: savedReferrer?.id || "",
         totalPrice: "",
         employeeProfit: "",
         deadline: "",
@@ -683,13 +693,11 @@ export function OrderForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">لا يوجد مندوب</SelectItem>
-                  {employees
-                    .filter((emp) => emp.isReferrer)
-                    .map((employee) => (
-                      <SelectItem key={employee.id} value={employee.id}>
-                        {employee.name} {employee.referrerCode && `(${employee.referrerCode})`}
-                      </SelectItem>
-                    ))}
+                  {referrers.map((referrer) => (
+                    <SelectItem key={referrer.id} value={referrer.id}>
+                      {referrer.name} ({referrer.code})
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {formData.referrerId && (

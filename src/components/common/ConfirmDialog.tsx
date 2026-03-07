@@ -22,6 +22,7 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   variant?: "default" | "destructive";
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 export function ConfirmDialog({
@@ -34,6 +35,7 @@ export function ConfirmDialog({
   onConfirm,
   variant = "default",
   isLoading = false,
+  disabled = false,
 }: ConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -42,9 +44,15 @@ export function ConfirmDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
         </AlertDialogHeader>
         <div className="flex-1 overflow-y-auto min-h-0 px-6">
-          <AlertDialogDescription className="text-sm">
-            {description}
-          </AlertDialogDescription>
+          {typeof description === "string" ? (
+            <AlertDialogDescription className="text-sm">
+              {description}
+            </AlertDialogDescription>
+          ) : (
+            <div className="text-sm text-muted-foreground">
+              {description}
+            </div>
+          )}
         </div>
         <AlertDialogFooter className="flex-shrink-0 pt-4 mt-4 border-t">
           <AlertDialogCancel disabled={isLoading}>
@@ -52,7 +60,7 @@ export function ConfirmDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
             className={variant === "destructive" ? "bg-red-600 hover:bg-red-700" : ""}
           >
             {isLoading ? "جاري المعالجة..." : confirmLabel}

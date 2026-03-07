@@ -75,10 +75,14 @@ function ContactFormContent() {
     filesLink: "",
   });
 
-  // Get referrer code from URL
+  
   useEffect(() => {
     const ref = searchParams?.get("ref");
     if (ref) {
+   
+      if (typeof window !== "undefined") {
+        localStorage.setItem("referrerCode", ref);
+      }
       setReferrerCode(ref);
       // Fetch referrer info
       fetch(`/api/referrer/${ref}`)
@@ -91,6 +95,25 @@ function ContactFormContent() {
         .catch((err) => {
           console.error("Error fetching referrer info:", err);
         });
+    } else {
+      // Check localStorage for saved referrer code
+      if (typeof window !== "undefined") {
+        const savedRef = localStorage.getItem("referrerCode");
+        if (savedRef) {
+          setReferrerCode(savedRef);
+          // Fetch referrer info
+          fetch(`/api/referrer/${savedRef}`)
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.name && data.referrerCode) {
+                setReferrerInfo({ name: data.name, code: data.referrerCode });
+              }
+            })
+            .catch((err) => {
+              console.error("Error fetching referrer info:", err);
+            });
+        }
+      }
     }
   }, [searchParams]);
 
@@ -231,8 +254,7 @@ function ContactFormContent() {
       // Send WhatsApp to referrer if exists
       if (data.referrer && data.referrer.whatsappLink) {
         setTimeout(() => {
-          window.open(data.referrer.whatsappLink, "_blank");
-          toast.success(`تم إرسال إشعار للمندوب: ${data.referrer.name}`);
+          window.open(data.referrer.whatsappLink, "_blank"); 
         }, 500);
       }
     } catch (error: any) {
@@ -450,14 +472,7 @@ function ContactFormContent() {
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
                 املأ المعلومات أدناه — وسيفتح واتساب برسالة جاهزة ومنظمة بكل التفاصيل
               </p>
-              {referrerInfo && (
-                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <Icon icon="solar:user-check-bold" className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-semibold text-green-700 dark:text-green-300">
-                    تمت الإحالة من: {referrerInfo.name}
-                  </span>
-                </div>
-              )}
+             
             </div>
 
             {/* name/email */}
