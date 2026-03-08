@@ -63,11 +63,9 @@ interface AdminSidebarProps {
 export function AdminSidebar({ userPermissions, userRole }: AdminSidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-
-  // Filter nav items based on permissions
+ 
   const getVisibleNavItems = (): NavItem[] => {
-    if (userRole === "ADMIN") {
-      // ADMIN sees all pages
+    if (userRole === "ADMIN") { 
       return ADMIN_PAGES.map((page) => ({
         href: page.path,
         label: page.label,
@@ -76,14 +74,12 @@ export function AdminSidebar({ userPermissions, userRole }: AdminSidebarProps) {
       }));
     }
 
-    // EMPLOYEE sees only pages they have permissions for
-    if (userRole === "EMPLOYEE" && userPermissions && userPermissions.length > 0) {
+     if (userRole === "EMPLOYEE" && userPermissions && userPermissions.length > 0) {
       return ADMIN_PAGES.filter((page) => {
         return userPermissions.some((perm) => {
-          // Exact match
+        
           if (perm === page.path) return true;
-          // Path starts with permission (for nested routes)
-          if (page.path.startsWith(perm + "/")) return true;
+           if (page.path.startsWith(perm + "/")) return true;
           return false;
         });
       }).map((page) => ({
@@ -126,8 +122,7 @@ export function AdminSidebar({ userPermissions, userRole }: AdminSidebarProps) {
           <nav className="flex-1 space-y-1 p-4">
             {visibleNavItems.length > 0 ? (
               visibleNavItems.map((item) => {
-                const Icon = item.icon;
-                // Fix active state: exact match for admin home, or starts with for others
+                const Icon = item.icon; 
                 const isActive = item.exact
                   ? pathname === item.href
                   : pathname === item.href || pathname.startsWith(item.href + "/");
@@ -137,7 +132,7 @@ export function AdminSidebar({ userPermissions, userRole }: AdminSidebarProps) {
                     href={item.href}
                     onClick={() => setIsMobileOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-md font-medium transition-colors",
+                      "flex items-center gap-3 rounded-lg px-3 py-1.5 text-md font-medium transition-colors",
                       isActive
                         ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                         : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"

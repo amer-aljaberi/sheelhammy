@@ -46,13 +46,11 @@ export function ReferrerForm({
     phone: "",
     phoneCountryCode: "+962",
     code: "",
-    commissionRate: null as number | null,
     isActive: true,
     country: "",
     university: "",
     academicYear: "",
     grade: "",
-    importantNotes: "",
     notes: "",
     sourceType: "none" as "none" | "employee" | "student",
     sourceId: "",
@@ -89,13 +87,11 @@ export function ReferrerForm({
           phone: referrer.phone || "",
           phoneCountryCode: referrer.phoneCountryCode || "+962",
           code: referrer.code || "",
-          commissionRate: referrer.commissionRate ?? null,
           isActive: referrer.isActive,
           country: referrer.country || "",
           university: referrer.university || "",
           academicYear: referrer.academicYear || "",
           grade: referrer.grade || "",
-          importantNotes: referrer.importantNotes || "",
           notes: referrer.notes || "",
           sourceType: "none",
           sourceId: "",
@@ -106,13 +102,11 @@ export function ReferrerForm({
           phone: "",
           phoneCountryCode: "+962",
           code: "",
-          commissionRate: null,
           isActive: true,
           country: "",
           university: "",
           academicYear: "",
           grade: "",
-          importantNotes: "",
           notes: "",
           sourceType: "none",
           sourceId: "",
@@ -179,13 +173,11 @@ export function ReferrerForm({
         phone: formData.phone || null,
         phoneCountryCode: formData.phoneCountryCode,
         code: finalCode.toUpperCase(),
-        commissionRate: formData.commissionRate || null,
         isActive: formData.isActive,
         country: formData.country || null,
         university: formData.university || null,
         academicYear: formData.academicYear || null,
         grade: formData.grade || null,
-        importantNotes: formData.importantNotes || null,
         notes: formData.notes || null,
         sourceType: formData.sourceType !== "none" ? formData.sourceType : null,
         sourceId: formData.sourceId || null,
@@ -348,22 +340,6 @@ export function ReferrerForm({
                 </Button>
               </div>
             </div>
-            <div>
-              <Label>نسبة العمولة (%)</Label>
-              <Input
-                type="number"
-                value={formData.commissionRate || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    commissionRate: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
-                min={0}
-                max={100}
-                placeholder="10"
-              />
-            </div>
             <div className="flex items-center space-x-2 space-x-reverse">
               <input
                 type="checkbox"
@@ -426,17 +402,6 @@ export function ReferrerForm({
                   setFormData({ ...formData, grade: e.target.value })
                 }
                 placeholder="الصف الدراسي"
-              />
-            </div>
-            <div>
-              <Label>الأشياء الهامة</Label>
-              <Textarea
-                value={formData.importantNotes}
-                onChange={(e) =>
-                  setFormData({ ...formData, importantNotes: e.target.value })
-                }
-                placeholder="ملاحظات هامة"
-                rows={3}
               />
             </div>
             <div>

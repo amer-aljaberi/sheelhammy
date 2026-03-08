@@ -16,12 +16,14 @@ export async function GET(request: NextRequest) {
     const serviceId = searchParams.get("serviceId");
     const studentId = searchParams.get("studentId");
     const employeeId = searchParams.get("employeeId");
+    const referrerId = searchParams.get("referrerId");
 
     const where: any = {};
     if (status) where.status = status as OrderStatus;
     if (serviceId) where.serviceId = serviceId;
     if (studentId) where.studentId = studentId;
     if (employeeId) where.employeeId = employeeId;
+    if (referrerId) where.referrerId = referrerId;
 
     const orders = await prisma.order.findMany({
       where,
@@ -121,6 +123,8 @@ export async function POST(request: NextRequest) {
       customServiceName,
       employeeId,
       referrerId,
+      referrerCommission,
+      payReferrer,
       totalPrice,
       employeeProfit,
       deadline,
@@ -187,16 +191,22 @@ export async function POST(request: NextRequest) {
     const orderCount = await prisma.order.count();
     const orderNumber = `#${String(orderCount + 1).padStart(4, "0")}`;
 
-    // Calculate referrer commission if referrerId is provided
-    let referrerCommission = null;
+    // Use referrer commission if provided, otherwise calculate from referrer's default rate
+    let finalReferrerCommission = null;
     if (referrerId) {
-      const referrer = await prisma.referrer.findUnique({
-        where: { id: referrerId },
-        select: { commissionRate: true },
-      });
-      if (referrer?.commissionRate) {
-        const finalPrice = parseFloat(totalPrice) - (discount ? parseFloat(discount) : 0);
-        referrerCommission = (finalPrice * referrer.commissionRate) / 100;
+      if (referrerCommission !== undefined && referrerCommission !== null) {
+        // Use manual commission amount if provided
+        finalReferrerCommission = parseFloat(referrerCommission);
+      } else {
+        // Calculate from referrer's default rate
+        const referrer = await prisma.referrer.findUnique({
+          where: { id: referrerId },
+          select: { commissionRate: true },
+        });
+        if (referrer?.commissionRate) {
+          const finalPrice = parseFloat(totalPrice) - (discount ? parseFloat(discount) : 0);
+          finalReferrerCommission = (finalPrice * referrer.commissionRate) / 100;
+        }
       }
     }
 
@@ -207,7 +217,7 @@ export async function POST(request: NextRequest) {
         serviceId: finalServiceId,
         employeeId: employeeId || null,
         referrerId: referrerId || null,
-        referrerCommission,
+        referrerCommission: finalReferrerCommission,
         totalPrice: parseFloat(totalPrice),
         employeeProfit: employeeProfit ? parseFloat(employeeProfit) : 0,
         deadline: deadline ? new Date(deadline) : null,
@@ -227,8 +237,54 @@ export async function POST(request: NextRequest) {
         student: true,
         service: true,
         employee: true,
+        referrer: true,
       },
     });
+
+    // Create referrer payment if payReferrer is true
+    if (payReferrer && referrerId && finalReferrerCommission && finalReferrerCommission > 0) {
+      try {
+        const referrer = await prisma.referrer.findUnique({
+          where: { id: referrerId },
+          select: { name: true, code: true },
+        });
+
+        // Create payment record
+        const payment = await prisma.referrerPayment.create({
+          data: {
+            referrerId,
+            amount: finalReferrerCommission,
+            paymentType: "cash",
+            paymentDate: new Date(),
+            notes: `دفع تلقائي عند إنشاء الطلب ${order.orderNumber}`,
+          },
+        });
+
+        // Create expense in finance system
+        const expenseTitle = `دفع عمولة للمندوب: ${referrer?.name || "غير معروف"} (${referrer?.code || ""})`;
+        const expenseDescription = `دفع عمولة للمندوب ${referrer?.name || "غير معروف"} - دفع تلقائي عند إنشاء الطلب ${order.orderNumber}`;
+
+        await prisma.expense.create({
+          data: {
+            title: expenseTitle,
+            amount: finalReferrerCommission,
+            category: "عمولات المندوبين",
+            date: new Date(),
+            description: expenseDescription,
+            properties: {
+              type: "referrer_payment",
+              referrerId: referrerId,
+              referrerPaymentId: payment.id,
+              paymentType: "cash",
+              orderId: order.id,
+            },
+          },
+        });
+      } catch (paymentError) {
+        console.error("Error creating referrer payment:", paymentError);
+        // Don't fail the order creation if payment creation fails
+      }
+    }
 
     return NextResponse.json(order, { status: 201 });
   } catch (error: any) {

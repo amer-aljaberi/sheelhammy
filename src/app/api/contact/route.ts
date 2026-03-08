@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
       referrerCode,
     } = body;
 
-    if (!name || !phone || !service || !message) {
+    if (!name || !phone) {
       return NextResponse.json(
-        { error: "الاسم، الهاتف، نوع الخدمة، والرسالة مطلوبة" },
+        { error: "الاسم والهاتف مطلوبان" },
         { status: 400 }
       );
     }
@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
             name,
             email: email || null,
             phone,
-            service,
-            message,
+            service: service || "other",
+            message: message || "",
             academicLevel: academicLevel || null,
             subject: subject || null,
             university: university || null,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
         `━━━━━━━━━━━━━━━━━━━━\n` +
         `📋 *تفاصيل الطلب*\n` +
         `━━━━━━━━━━━━━━━━━━━━\n` +
-        `نوع الخدمة: ${service}\n` +
+        `${service ? `نوع الخدمة: ${service}\n` : ''}` +
         `${academicLevel ? `المرحلة: ${academicLevel}\n` : ''}` +
         `${university ? `الجامعة: ${university}\n` : ''}` +
         `${subject ? `المادة: ${subject}\n` : ''}` +
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         `━━━━━━━━━━━━━━━━━━━━\n` +
         `💬 *الرسالة*\n` +
         `━━━━━━━━━━━━━━━━━━━━\n` +
-        `${message}\n\n` +
+        `${message || 'لا توجد رسالة'}\n\n` +
         `━━━━━━━━━━━━━━━━━━━━\n` +
         `✅ تم إرسال الطلب عبر رابطك الخاص`;
 

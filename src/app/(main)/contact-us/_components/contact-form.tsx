@@ -697,38 +697,9 @@ function ContactFormContent() {
                   </div>
                 </div>
               </div>
-
-            {/* Replace pagesOrWords */}
+ 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-                <div>
-                  <FieldLabel>نوع المخرجات المطلوبة</FieldLabel>
-                  <div className="relative group">
-                    <Icon
-                      icon="solar:document-text-bold"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0056D2] dark:text-blue-400 z-10 pointer-events-none"
-                    />
-                    <select
-                      name="pagesOrWords"
-                      value={formData.pagesOrWords}
-                      onChange={handleChange}
-                      className={selectBase}
-                    >
-                      <option value="">اختر</option>
-                      <option value="word">ملف Word</option>
-                      <option value="pdf">ملف PDF</option>
-                      <option value="ppt">PowerPoint (PPT)</option>
-                      <option value="both_word_pdf">Word + PDF</option>
-                      <option value="other">أخرى</option>
-                    </select>
-                    <Icon
-                      icon="solar:alt-arrow-down-bold"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
+                   <div>
                     <FieldLabel>اللغة</FieldLabel>
                     <div className="relative group">
                       <Icon
@@ -774,8 +745,7 @@ function ContactFormContent() {
                         className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
                       />
                     </div>
-                  </div>
-                </div>
+                  </div> 
               </div>
 
             {/* Details */}
@@ -790,7 +760,7 @@ function ContactFormContent() {
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
-                  required
+                  required={false}
                   rows={5}
                   className={
                     "w-full pr-12 pl-4 py-4 rounded-2xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 text-base " +
@@ -803,8 +773,8 @@ function ContactFormContent() {
             </div>
 
             <Button
-              type="submit"
-              size="xl"
+                type="submit"
+                size="lg"
               className="group relative w-full overflow-hidden rounded-2xl
            bg-gradient-to-r from-green-500 to-green-600
            text-white font-bold text-base sm:text-lg

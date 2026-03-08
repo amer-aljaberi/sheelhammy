@@ -29,6 +29,7 @@ interface ReferrerPaymentFormProps {
   onOpenChange: (open: boolean) => void;
   referrer: Referrer | null;
   onSuccess: () => void;
+  initialAmount?: number;
 }
 
 export function ReferrerPaymentForm({
@@ -36,6 +37,7 @@ export function ReferrerPaymentForm({
   onOpenChange,
   referrer,
   onSuccess,
+  initialAmount,
 }: ReferrerPaymentFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -47,14 +49,17 @@ export function ReferrerPaymentForm({
 
   useEffect(() => {
     if (open && referrer) {
+      const amount = initialAmount !== undefined 
+        ? initialAmount.toString()
+        : (referrer.stats.remaining > 0 ? referrer.stats.remaining.toString() : "");
       setFormData({
-        amount: referrer.stats.remaining > 0 ? referrer.stats.remaining.toString() : "",
+        amount,
         paymentType: "cash",
         paymentDate: new Date().toISOString().split("T")[0],
         notes: "",
       });
     }
-  }, [open, referrer]);
+  }, [open, referrer, initialAmount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -209,16 +209,15 @@ export async function DELETE(
       );
     }
 
-    // Check for related records
+    // Check for related records that prevent deletion
     const hasOrders = referrer._count.orders > 0;
     const hasPayments = referrer._count.payments > 0;
-    const hasReferrals = referrer._count.referrals > 0;
 
-    if (hasOrders || hasPayments || hasReferrals) {
+    // Allow deletion even if there are referrals - referrals will remain with null referrerId
+    if (hasOrders || hasPayments) {
       const reasons = [];
       if (hasOrders) reasons.push(`${referrer._count.orders} طلب`);
       if (hasPayments) reasons.push(`${referrer._count.payments} دفعة`);
-      if (hasReferrals) reasons.push(`${referrer._count.referrals} إحالة`);
 
       return NextResponse.json(
         {
@@ -229,6 +228,9 @@ export async function DELETE(
       );
     }
 
+    // Delete the referrer
+    // Referrals will remain but their referrerId will be set to null automatically
+    // due to onDelete: SetNull in the schema
     await prisma.referrer.delete({
       where: { id: referrerId },
     });

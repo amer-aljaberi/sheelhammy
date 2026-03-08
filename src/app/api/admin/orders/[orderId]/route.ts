@@ -56,6 +56,8 @@ export async function PATCH(
     const {
       employeeId,
       referrerId,
+      referrerCommission,
+      payReferrer,
       status,
       deadline,
       totalPrice,
@@ -74,21 +76,28 @@ export async function PATCH(
       description,
     } = body;
  
-    let referrerCommission = null;
+    let finalReferrerCommission = null;
     if (referrerId !== undefined) {
       if (referrerId) {
-        const referrer = await prisma.referrer.findUnique({
-          where: { id: referrerId },
-          select: { commissionRate: true },
-        });
-        if (referrer?.commissionRate) { 
+        // Use manual commission amount if provided
+        if (referrerCommission !== undefined && referrerCommission !== null) {
+          finalReferrerCommission = parseFloat(referrerCommission);
+        } else {
+          // Calculate from referrer's default rate
           const currentOrder = await prisma.order.findUnique({
             where: { id: orderId },
             select: { totalPrice: true, discount: true },
           });
           const finalPrice = (currentOrder?.totalPrice || (totalPrice ? parseFloat(totalPrice) : 0)) - 
                             ((discount !== undefined ? parseFloat(discount) : currentOrder?.discount || 0));
-          referrerCommission = (finalPrice * referrer.commissionRate) / 100;
+          
+          const referrer = await prisma.referrer.findUnique({
+            where: { id: referrerId },
+            select: { commissionRate: true },
+          });
+          if (referrer?.commissionRate) {
+            finalReferrerCommission = (finalPrice * referrer.commissionRate) / 100;
+          }
         }
       }
     }
@@ -97,7 +106,7 @@ export async function PATCH(
     if (employeeId !== undefined) updateData.employeeId = employeeId || null;
     if (referrerId !== undefined) {
       updateData.referrerId = referrerId || null;
-      updateData.referrerCommission = referrerCommission;
+      updateData.referrerCommission = finalReferrerCommission;
     }
     if (status !== undefined) updateData.status = status as OrderStatus;
     if (deadline !== undefined)
@@ -126,8 +135,54 @@ export async function PATCH(
         student: true,
         service: true,
         employee: true,
+        referrer: true,
       },
     });
+
+    // Create referrer payment if payReferrer is true
+    if (payReferrer && order.referrerId && finalReferrerCommission && finalReferrerCommission > 0) {
+      try {
+        const referrer = await prisma.referrer.findUnique({
+          where: { id: order.referrerId },
+          select: { name: true, code: true },
+        });
+
+        // Create payment record
+        const payment = await prisma.referrerPayment.create({
+          data: {
+            referrerId: order.referrerId,
+            amount: finalReferrerCommission,
+            paymentType: "cash",
+            paymentDate: new Date(),
+            notes: `دفع تلقائي عند تحديث الطلب ${order.orderNumber}`,
+          },
+        });
+
+        // Create expense in finance system
+        const expenseTitle = `دفع عمولة للمندوب: ${referrer?.name || "غير معروف"} (${referrer?.code || ""})`;
+        const expenseDescription = `دفع عمولة للمندوب ${referrer?.name || "غير معروف"} - دفع تلقائي عند تحديث الطلب ${order.orderNumber}`;
+
+        await prisma.expense.create({
+          data: {
+            title: expenseTitle,
+            amount: finalReferrerCommission,
+            category: "عمولات المندوبين",
+            date: new Date(),
+            description: expenseDescription,
+            properties: {
+              type: "referrer_payment",
+              referrerId: order.referrerId,
+              referrerPaymentId: payment.id,
+              paymentType: "cash",
+              orderId: order.id,
+            },
+          },
+        });
+      } catch (paymentError) {
+        console.error("Error creating referrer payment:", paymentError);
+        // Don't fail the order update if payment creation fails
+      }
+    }
  
     if (status === OrderStatus.REVISION && order.employeeId) {
       await prisma.notification.create({

@@ -20,7 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Combobox } from "@/components/ui/combobox";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  ComboboxCollection,
+} from "@/components/ui/combobox";
 import { Order } from "./OrderTable";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,12 +79,16 @@ export function OrderForm({
 }: OrderFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [studentSearch, setStudentSearch] = useState("");
+  const [serviceSearch, setServiceSearch] = useState("");
   const [formData, setFormData] = useState({
     studentId: "",
     serviceId: "",
     customServiceName: "", // اسم الخدمة المخصصة
     employeeId: "",
     referrerId: "",
+    referrerCommission: "", // ربح المندوب من الطلب (مبلغ مباشر)
+    payReferrer: false, // دفع المندوب مباشرة عند إنشاء/تعديل الطلب
     totalPrice: "",
     employeeProfit: "",
     deadline: "",
@@ -113,6 +126,8 @@ export function OrderForm({
         customServiceName: "",
         employeeId: "",
         referrerId: savedReferrer?.id || "",
+        referrerCommission: "",
+        payReferrer: false,
         totalPrice: "",
         employeeProfit: "",
         deadline: "",
@@ -130,6 +145,8 @@ export function OrderForm({
         paidAmount: "",
         installmentAmount: "",
       });
+      setStudentSearch("");
+      setServiceSearch("");
     }
   }, [order, open]);
 
@@ -168,6 +185,8 @@ export function OrderForm({
         customServiceName: orderData.customServiceName || "",
         employeeId: orderData.employeeId || "",
         referrerId: orderData.referrerId || "",
+        referrerCommission: orderData.referrerCommission?.toString() || "",
+        payReferrer: false,
         totalPrice: orderData.totalPrice?.toString() || "",
         employeeProfit: orderData.employeeProfit?.toString() || "",
         deadline: orderData.deadline ? new Date(orderData.deadline).toISOString().split('T')[0] : "",
@@ -206,6 +225,8 @@ export function OrderForm({
             body: JSON.stringify({
             employeeId: formData.employeeId === "none" || formData.employeeId === "" ? null : formData.employeeId,
             referrerId: formData.referrerId === "none" || formData.referrerId === "" ? null : formData.referrerId,
+            referrerCommission: formData.referrerCommission ? parseFloat(formData.referrerCommission) : null,
+            payReferrer: formData.payReferrer || false,
             status: formData.status || undefined,
             deadline: formData.deadline || null,
             isPaid: formData.isPaid,
@@ -251,6 +272,8 @@ export function OrderForm({
             customServiceName: formData.serviceId === "custom" ? formData.customServiceName : null,
             employeeId: formData.employeeId === "none" || formData.employeeId === "" ? null : formData.employeeId,
             referrerId: formData.referrerId === "none" || formData.referrerId === "" ? null : formData.referrerId,
+            referrerCommission: formData.referrerCommission ? parseFloat(formData.referrerCommission) : null,
+            payReferrer: formData.payReferrer || false,
             totalPrice: parseFloat(formData.totalPrice),
             employeeProfit: formData.employeeProfit
               ? parseFloat(formData.employeeProfit)
@@ -311,43 +334,114 @@ export function OrderForm({
                 <div>
                   <Label>الطالب</Label>
                   <Combobox
-                    options={students.map((student) => ({
-                      value: student.id,
-                      label: student.name,
-                    }))}
+                    items={students.map((s) => s.id)}
                     value={formData.studentId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, studentId: value })
-                    }
-                    placeholder="اختر الطالب"
-                    searchPlaceholder="ابحث عن طالب..."
-                    emptyText="لا يوجد طلاب"
-                    required
-                  />
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, studentId: value ?? "" });
+                      setStudentSearch("");
+                    }}
+                  >
+                    <ComboboxInput 
+                      placeholder="اختر الطالب"
+                      value={formData.studentId ? (students.find((s) => s.id === formData.studentId)?.name || "") : studentSearch}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const searchValue = e.target.value;
+                        setStudentSearch(searchValue);
+                        // Clear selection if user is typing
+                        if (formData.studentId) {
+                          setFormData({ ...formData, studentId: "" });
+                        }
+                      }}
+                    />
+                    <ComboboxContent>
+                      <ComboboxList>
+                        {(() => {
+                          const filteredStudents = students.filter((student) => 
+                            !studentSearch || 
+                            student.name.toLowerCase().includes(studentSearch.toLowerCase())
+                          );
+                          return filteredStudents.length === 0 ? (
+                            <div className="py-6 text-center text-sm text-muted-foreground">لا يوجد طلاب</div>
+                          ) : (
+                            filteredStudents.map((student) => (
+                              <ComboboxItem 
+                                key={student.id} 
+                                value={student.id}
+                              >
+                                {student.name}
+                              </ComboboxItem>
+                            ))
+                          );
+                        })()}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
                 </div>
                 <div>
                   <Label>الخدمة</Label>
                   <Combobox
-                    options={[
-                      { value: "custom", label: "خدمة مخصصة" },
-                      ...services.map((service) => ({
-                        value: service.id,
-                        label: service.title,
-                      })),
-                    ]}
+                    items={["custom", ...services.map((s) => s.id)]}
                     value={formData.serviceId}
-                    onValueChange={(value) =>
+                    onValueChange={(value) => {
                       setFormData({ 
                         ...formData, 
-                        serviceId: value,
+                        serviceId: value ?? "",
                         customServiceName: value === "custom" ? formData.customServiceName : ""
-                      })
-                    }
-                    placeholder="اختر الخدمة"
-                    searchPlaceholder="ابحث عن خدمة..."
-                    emptyText="لا توجد خدمات"
-                    required
-                  />
+                      });
+                      setServiceSearch("");
+                    }}
+                  >
+                    <ComboboxInput 
+                      placeholder="اختر الخدمة"
+                      value={formData.serviceId ? (
+                        formData.serviceId === "custom" 
+                          ? "خدمة مخصصة" 
+                          : (services.find((s) => s.id === formData.serviceId)?.title || "")
+                      ) : serviceSearch}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const searchValue = e.target.value;
+                        setServiceSearch(searchValue);
+                        // Clear selection if user is typing
+                        if (formData.serviceId) {
+                          setFormData({ ...formData, serviceId: "" });
+                        }
+                      }}
+                    />
+                    <ComboboxContent>
+                      <ComboboxList>
+                        {(() => {
+                          const filteredServices = services.filter((service) => 
+                            !serviceSearch || 
+                            service.title.toLowerCase().includes(serviceSearch.toLowerCase())
+                          );
+                          const showCustom = !serviceSearch || "خدمة مخصصة".toLowerCase().includes(serviceSearch.toLowerCase());
+                          const hasResults = showCustom || filteredServices.length > 0;
+                          
+                          if (!hasResults) {
+                            return <div className="py-6 text-center text-sm text-muted-foreground">لا توجد خدمات</div>;
+                          }
+                          
+                          return (
+                            <>
+                              {showCustom && (
+                                <ComboboxItem value="custom">
+                                  خدمة مخصصة
+                                </ComboboxItem>
+                              )}
+                              {filteredServices.map((service) => (
+                                <ComboboxItem 
+                                  key={service.id} 
+                                  value={service.id}
+                                >
+                                  {service.title}
+                                </ComboboxItem>
+                              ))}
+                            </>
+                          );
+                        })()}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
                   {formData.serviceId === "custom" && (
                     <div className="mt-2">
                       <Label>اسم الخدمة المخصصة</Label>
@@ -701,9 +795,38 @@ export function OrderForm({
                 </SelectContent>
               </Select>
               {formData.referrerId && (
-                <p className="text-xs text-gray-500 mt-1">
-                  سيتم حساب عمولة المندوب تلقائياً عند حفظ الطلب
-                </p>
+                <div className="mt-2 space-y-2">
+                  <div>
+                    <Label>ربح المندوب من الطلب</Label>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={formData.referrerCommission}
+                      onChange={(e) =>
+                        setFormData({ ...formData, referrerCommission: e.target.value })
+                      }
+                      min={0}
+                      step="0.01"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      أدخل المبلغ المباشر لربح المندوب من هذا الطلب
+                    </p>
+                  </div>
+                  {formData.referrerCommission && parseFloat(formData.referrerCommission) > 0 && (
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <Checkbox
+                        id="payReferrer"
+                        checked={formData.payReferrer}
+                        onCheckedChange={(checked) =>
+                          setFormData({ ...formData, payReferrer: checked as boolean })
+                        }
+                      />
+                      <Label htmlFor="payReferrer" className="cursor-pointer">
+                        دفع المندوب مباشرة ({parseFloat(formData.referrerCommission).toFixed(2)} د.أ)
+                      </Label>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

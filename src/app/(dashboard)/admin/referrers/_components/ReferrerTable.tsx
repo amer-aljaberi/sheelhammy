@@ -7,6 +7,7 @@ import { Edit, Trash2, DollarSign, Copy, Users } from "lucide-react";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { formatCurrency } from "@/lib/utils";
 import { Icon } from "@iconify/react";
+import { toast } from "sonner";
 
 export type Referrer = {
   id: string;
@@ -14,7 +15,6 @@ export type Referrer = {
   phone: string | null;
   phoneCountryCode: string | null;
   code: string;
-  commissionRate: number | null;
   isActive: boolean;
   country: string | null;
   university: string | null;
@@ -93,22 +93,19 @@ export function getReferrerColumns(
               size="icon"
               className="h-6 w-6"
               onClick={() => {
-                navigator.clipboard.writeText(referrer.code);
+                const referrerLink = `${window.location.origin}/contact-us?ref=${referrer.code}`;
+                navigator.clipboard.writeText(referrerLink).then(() => {
+                  toast.success("تم نسخ رابط المندوب بنجاح");
+                }).catch(() => {
+                  toast.error("فشل نسخ الرابط");
+                });
               }}
-              title="نسخ الكود"
+              title="نسخ رابط المندوب"
             >
               <Copy className="h-3 w-3" />
             </Button>
           </div>
         );
-      },
-    },
-    {
-      accessorKey: "commissionRate",
-      header: "نسبة العمولة %",
-      cell: ({ row }) => {
-        const referrer = row.original;
-        return referrer.commissionRate ? `${referrer.commissionRate}%` : "-";
       },
     },
     {
@@ -176,16 +173,7 @@ export function getReferrerColumns(
               title="تعديل"
             >
               <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => onPayment(referrer)}
-              title="دفع"
-              className="text-green-600 hover:text-green-700"
-            >
-              <DollarSign className="h-4 w-4" />
-            </Button>
+            </Button> 
             <Button
               variant="outline"
               size="icon"

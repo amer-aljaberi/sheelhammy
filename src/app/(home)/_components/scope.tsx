@@ -111,8 +111,8 @@ export function ScopeSection() {
 
             <div className="pt-2">
               <Button
-                variant="hero"
-                size="xl"
+                variant="default"
+                size="default"
                 asChild
                 className="group shadow-lg hover:shadow-xl transition-all duration-300"
               >
@@ -133,8 +133,7 @@ export function ScopeSection() {
               </Button>
             </div>
           </div>
-
-          {/* Image Section */}
+ 
           <div className="relative order-first lg:order-last flex justify-center">
             <div className="relative">
               <Image

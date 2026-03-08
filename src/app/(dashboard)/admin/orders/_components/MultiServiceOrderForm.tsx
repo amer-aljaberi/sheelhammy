@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/combobox";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PAYMENT_TYPES, ORDER_PRIORITIES, GRADE_TYPES, BTEC_GRADES } from "@/lib/countries";
  
 import { Trash2, Plus } from "lucide-react";
@@ -101,6 +102,7 @@ export function MultiServiceOrderForm({
   const [studentSearch, setStudentSearch] = useState("");
   const [referrerId, setReferrerId] = useState("");
   const [referrerCommission, setReferrerCommission] = useState("");
+  const [payReferrer, setPayReferrer] = useState(false);
   const [deadline, setDeadline] = useState("");
   const [priority, setPriority] = useState("normal");
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>([
@@ -137,6 +139,7 @@ export function MultiServiceOrderForm({
       setStudentSearch("");
       setReferrerId("");
       setReferrerCommission("");
+      setPayReferrer(false);
       setDeadline("");
       setPriority("normal");
       setServiceItems([
@@ -283,6 +286,7 @@ export function MultiServiceOrderForm({
             employeeId: item.employeeId && item.employeeId !== "none" ? item.employeeId : null,
             referrerId: referrerId && referrerId !== "none" ? referrerId : null,
             referrerCommission: referrerCommission ? parseFloat(referrerCommission) : null,
+            payReferrer: payReferrer && referrerCommission && parseFloat(referrerCommission) > 0,
           totalPrice: parseFloat(item.price),
           employeeProfit: item.employeeProfit ? parseFloat(item.employeeProfit) : 0,
           deadline: deadline || null,
@@ -399,19 +403,33 @@ export function MultiServiceOrderForm({
                 </SelectContent>
               </Select>
               {referrerId && referrerId !== "none" && (
-                <div className="mt-2">
-                  <Label>ربح المندوب من الطلب</Label>
-                  <Input
-                    type="number"
-                    placeholder="0.00"
-                    value={referrerCommission}
-                    onChange={(e) => setReferrerCommission(e.target.value)}
-                    min={0}
-                    step="0.01"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    سيتم تطبيق هذا المبلغ على جميع الخدمات في هذا الطلب
-                  </p>
+                <div className="mt-2 space-y-2">
+                  <div>
+                    <Label>ربح المندوب من الطلب</Label>
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={referrerCommission}
+                      onChange={(e) => setReferrerCommission(e.target.value)}
+                      min={0}
+                      step="0.01"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      سيتم تطبيق هذا المبلغ على جميع الخدمات في هذا الطلب
+                    </p>
+                  </div>
+                  {referrerCommission && parseFloat(referrerCommission) > 0 && (
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                      <Checkbox
+                        id="payReferrer"
+                        checked={payReferrer}
+                        onCheckedChange={(checked) => setPayReferrer(checked as boolean)}
+                      />
+                      <Label htmlFor="payReferrer" className="cursor-pointer">
+                        دفع المندوب مباشرة ({parseFloat(referrerCommission).toFixed(2)} د.أ)
+                      </Label>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

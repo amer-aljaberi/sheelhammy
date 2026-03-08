@@ -49,7 +49,6 @@ export function EmployeeForm({
     phoneCountryCode: (employee as any)?.phoneCountryCode || "+962",
     password: "",
     role: (employee as any)?.role || ("EMPLOYEE" as Role),
-    defaultProfitRate: (employee as any)?.defaultProfitRate || null,
     country: (employee as any)?.country || "",
     specialization: (employee as any)?.specialization || "",
     services: [] as string[],
@@ -126,7 +125,6 @@ export function EmployeeForm({
           phoneCountryCode: emp.phoneCountryCode || "+962",
           password: "",
           role: emp.role || ("EMPLOYEE" as Role),
-          defaultProfitRate: emp.defaultProfitRate ?? null,
           country: emp.country || "",
           specialization: emp.specialization || "",
           services: servicesArray,
@@ -141,7 +139,6 @@ export function EmployeeForm({
           phoneCountryCode: "+962",
           password: "",
           role: "EMPLOYEE" as Role,
-          defaultProfitRate: null,
           country: "",
           specialization: "",
           services: [],
@@ -168,7 +165,6 @@ export function EmployeeForm({
         phone: formData.phone || null,
         phoneCountryCode: formData.phoneCountryCode,
         role: formData.role,
-        defaultProfitRate: formData.defaultProfitRate || null,
         country: formData.country || null,
         specialization: formData.specialization || null,
         services: formData.services.length > 0 ? formData.services : null,
@@ -395,22 +391,6 @@ export function EmployeeForm({
                 )}
               </div>
             )}
-            <div>
-              <Label>نسبة الربح الافتراضية (%) (اختياري)</Label>
-              <Input
-                type="number"
-                value={formData.defaultProfitRate || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    defaultProfitRate: e.target.value ? Number(e.target.value) : null,
-                  })
-                }
-                min={0}
-                max={100}
-                placeholder="40"
-              />
-            </div>
             <div>
               <Label>الدولة</Label>
               <Select

@@ -25,7 +25,6 @@ type EmployeeDetail = {
   role: string;
   avatar: string | null;
   isActive: boolean;
-  defaultProfitRate: number | null;
   country?: string | null;
   specialization?: string | null;
   services?: any;
@@ -91,7 +90,6 @@ export function EmployeeViewDialog({
         role: data.role,
         avatar: data.avatar,
         isActive: data.isActive,
-        defaultProfitRate: data.defaultProfitRate,
         country: data.country,
         specialization: data.specialization,
         services: data.services,
@@ -234,10 +232,6 @@ export function EmployeeViewDialog({
                     <p className={`font-semibold ${employeeDetail.complaintsCount && employeeDetail.complaintsCount > 0 ? "text-red-600" : ""}`}>
                       {employeeDetail.complaintsCount || 0}
                     </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">نسبة الربح الافتراضية</p>
-                    <p className="font-semibold">{employeeDetail.defaultProfitRate || 40}%</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">تاريخ الإنشاء</p>

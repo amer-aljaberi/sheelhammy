@@ -141,7 +141,7 @@ export async function PATCH(
   }
 }
 
-// DELETE - Delete employee (soft delete by setting isActive to false)
+// DELETE - Delete employee (hard delete if no active orders, otherwise soft delete)
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ employeeId: string }> }
@@ -153,6 +153,13 @@ export async function DELETE(
     }
 
     const { employeeId } = await params;
+
+    // Check if employee has any orders (active or completed)
+    const totalOrders = await prisma.order.count({
+      where: {
+        employeeId,
+      },
+    });
 
     // Check if employee has active orders
     const activeOrders = await prisma.order.count({
@@ -166,22 +173,30 @@ export async function DELETE(
 
     if (activeOrders > 0) {
       return NextResponse.json(
-        { error: "Cannot delete employee with active orders" },
+        { error: "Cannot delete employee with active orders. Please complete or cancel all active orders first." },
         { status: 400 }
       );
     }
 
-    // Soft delete by setting isActive to false
-    await prisma.user.update({
+    // If employee has completed orders, do soft delete (deactivate)
+    if (totalOrders > 0) {
+      await prisma.user.update({
+        where: { id: employeeId },
+        data: { isActive: false },
+      });
+      return NextResponse.json({ message: "Employee deactivated successfully (has completed orders)" });
+    }
+
+    // If no orders at all, do hard delete
+    await prisma.user.delete({
       where: { id: employeeId },
-      data: { isActive: false },
     });
 
-    return NextResponse.json({ message: "Employee deactivated successfully" });
+    return NextResponse.json({ message: "Employee deleted successfully" });
   } catch (error: any) {
     console.error("Error deleting employee:", error);
     return NextResponse.json(
-      { error: "Failed to delete employee" },
+      { error: error.message || "Failed to delete employee" },
       { status: 500 }
     );
   }

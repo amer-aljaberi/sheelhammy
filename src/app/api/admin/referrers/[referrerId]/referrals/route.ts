@@ -24,6 +24,17 @@ export async function GET(
 
     const referrals = await prisma.referral.findMany({
       where,
+      include: {
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            totalPrice: true,
+            referrerCommission: true,
+            status: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 

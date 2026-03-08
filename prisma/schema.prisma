@@ -148,7 +148,7 @@ model ReferrerPayment {
 
 model Referral {
   id            String            @id @default(uuid())
-  referrerId    String
+  referrerId    String?           // يمكن أن يكون null عند حذف المندوب
   orderId       String?           // ربط الإحالة بالطلب عند إتمامها
   name          String
   email         String?
@@ -167,7 +167,7 @@ model Referral {
   notes         String?           @db.Text
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
-  referrer      Referrer          @relation("ReferrerReferrals", fields: [referrerId], references: [id])
+  referrer      Referrer?         @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: SetNull)
   order         Order?            @relation("ReferralOrders", fields: [orderId], references: [id])
 
   @@index([referrerId], map: "Referral_referrerId_idx")

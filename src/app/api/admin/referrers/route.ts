@@ -54,71 +54,90 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate stats for each referrer
-    const formattedReferrers = referrers.map((referrer) => {
-      // Get order IDs from directly linked orders (orders with referrerId = referrer.id)
-      const directOrderIds = new Set(referrer.orders.map((o) => o.id));
-      
-      // Get all completed referrals
-      const completedReferrals = referrer.referrals.filter(
-        (r) => r.status === "COMPLETED"
-      );
-      
-      // Get completed referrals that have an orderId (linked to an order)
-      const completedReferralsWithOrders = completedReferrals.filter(
-        (r) => r.orderId !== null && r.orderId !== undefined && String(r.orderId).trim() !== ""
-      );
-      
-      // Count unique orders from completed referrals that aren't already in direct orders
-      // This ensures we count all orders related to this referrer, whether directly linked or through referrals
-      const uniqueReferralOrderIds = new Set(
-        completedReferralsWithOrders
-          .map((r) => String(r.orderId).trim())
-          .filter((id) => id !== "" && !directOrderIds.has(id))
-      );
-      
-      // Total orders = direct orders + unique completed referral orders
-      // Note: We count completed referrals with orderId, even if the order itself doesn't have referrerId set
-      // If a completed referral has an orderId, it means it's linked to an order, so we count it
-      const totalOrders = referrer.orders.length + uniqueReferralOrderIds.size;
-      
-      const totalEarnings = referrer.orders.reduce(
-        (sum, order) => sum + (order.referrerCommission || 0),
-        0
-      );
-      const totalPaid = referrer.payments.reduce(
-        (sum, payment) => sum + payment.amount,
-        0
-      );
-      const remaining = totalEarnings - totalPaid;
-      const pendingReferrals = referrer.referrals.filter(r => r.status === "PENDING").length;
+    const formattedReferrers = await Promise.all(
+      referrers.map(async (referrer) => {
+        // Get all orders directly linked to this referrer (where referrerId = referrer.id)
+        // This includes all orders whether created directly or from referrals
+        const allOrders = await prisma.order.findMany({
+          where: {
+            referrerId: referrer.id,
+          },
+          select: {
+            id: true,
+            referrerCommission: true,
+          },
+        });
+        
+        // Get order IDs from directly linked orders
+        const directOrderIds = new Set(allOrders.map((o) => o.id));
+        
+        // Get all completed referrals
+        const completedReferrals = referrer.referrals.filter(
+          (r) => r.status === "COMPLETED"
+        );
+        
+        // Get completed referrals that have an orderId (linked to an order)
+        const completedReferralsWithOrders = completedReferrals.filter(
+          (r) => r.orderId !== null && r.orderId !== undefined && String(r.orderId).trim() !== ""
+        );
+        
+        // Count unique orders from completed referrals that aren't already in direct orders
+        // This ensures we count all orders related to this referrer, whether directly linked or through referrals
+        const uniqueReferralOrderIds = new Set(
+          completedReferralsWithOrders
+            .map((r) => String(r.orderId).trim())
+            .filter((id) => id !== "" && !directOrderIds.has(id))
+        );
+        
+        // Total orders = direct orders + unique completed referral orders
+        const totalOrders = allOrders.length + uniqueReferralOrderIds.size;
+        
+        // Total earnings = sum of referrerCommission from all orders linked to this referrer
+        // We only count from direct orders (where referrerId = referrer.id) to avoid double counting
+        // Convert to number to ensure proper calculation
+        const totalEarnings = allOrders.reduce(
+          (sum, order) => {
+            const commission = order.referrerCommission;
+            return sum + (commission ? Number(commission) : 0);
+          },
+          0
+        );
+        
+        const totalPaid = referrer.payments.reduce(
+          (sum, payment) => sum + payment.amount,
+          0
+        );
+        const remaining = totalEarnings - totalPaid;
+        const pendingReferrals = referrer.referrals.filter(r => r.status === "PENDING").length;
 
-      return {
-        id: referrer.id,
-        name: referrer.name,
-        phone: referrer.phone,
-        phoneCountryCode: referrer.phoneCountryCode,
-        code: referrer.code,
-        commissionRate: referrer.commissionRate,
-        isActive: referrer.isActive,
-        country: referrer.country,
-        university: referrer.university,
-        academicYear: referrer.academicYear,
-        grade: referrer.grade,
-        importantNotes: referrer.importantNotes,
-        notes: referrer.notes,
-        sourceType: referrer.sourceType,
-        sourceId: referrer.sourceId,
-        createdAt: referrer.createdAt,
-        updatedAt: referrer.updatedAt,
-        stats: {
-          totalOrders,
-          totalEarnings,
-          totalPaid,
-          remaining,
-          pendingReferrals,
-        },
-      };
-    });
+        return {
+          id: referrer.id,
+          name: referrer.name,
+          phone: referrer.phone,
+          phoneCountryCode: referrer.phoneCountryCode,
+          code: referrer.code,
+          commissionRate: referrer.commissionRate,
+          isActive: referrer.isActive,
+          country: referrer.country,
+          university: referrer.university,
+          academicYear: referrer.academicYear,
+          grade: referrer.grade,
+          importantNotes: referrer.importantNotes,
+          notes: referrer.notes,
+          sourceType: referrer.sourceType,
+          sourceId: referrer.sourceId,
+          createdAt: referrer.createdAt,
+          updatedAt: referrer.updatedAt,
+          stats: {
+            totalOrders,
+            totalEarnings,
+            totalPaid,
+            remaining,
+            pendingReferrals,
+          },
+        };
+      })
+    );
 
     return NextResponse.json(formattedReferrers);
   } catch (error: any) {

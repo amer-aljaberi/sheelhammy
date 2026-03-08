@@ -17,7 +17,6 @@ export type Employee = {
   phoneCountryCode?: string | null;
   role: string;
   isActive: boolean;
-  defaultProfitRate: number | null;
   country?: string | null;
   specialization?: string | null;
   services?: any;
@@ -145,11 +144,6 @@ export function getEmployeeColumns(
       accessorKey: "totalProfit",
       header: "إجمالي الأرباح",
       cell: ({ row }) => formatCurrency(row.original.totalProfit),
-    },
-    {
-      accessorKey: "defaultProfitRate",
-      header: "نسبة الربح",
-      cell: ({ row }) => `${row.original.defaultProfitRate || 40}%`,
     },
     {
       accessorKey: "isActive",

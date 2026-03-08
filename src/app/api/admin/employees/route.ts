@@ -14,11 +14,17 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get("isActive");
+    const includeInactive = searchParams.get("includeInactive") === "true";
 
     const where: any = {
       role: Role.EMPLOYEE,
     };
-    if (isActive !== null) where.isActive = isActive === "true";
+    // By default, only show active employees unless explicitly requested
+    if (!includeInactive) {
+      where.isActive = true;
+    } else if (isActive !== null) {
+      where.isActive = isActive === "true";
+    }
 
     const employees = await prisma.user.findMany({
       where,

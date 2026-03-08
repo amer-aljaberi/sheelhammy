@@ -20,8 +20,8 @@ export function ReferrerDeleteDialog({
   if (!referrer) return null;
  
   const hasOrders = referrer.stats.totalOrders > 0;
-  const hasReferrals = referrer.stats.pendingReferrals > 0;
-  const cannotDelete = hasOrders || hasReferrals;
+  // Allow deletion even if there are referrals - they will remain with null referrerId
+  const cannotDelete = hasOrders;
 
   return (
     <ConfirmDialog
@@ -40,12 +40,16 @@ export function ReferrerDeleteDialog({
                 {hasOrders && (
                   <li>{referrer.stats.totalOrders} طلب مرتبط</li>
                 )}
-                {hasReferrals && (
-                  <li>{referrer.stats.pendingReferrals} إحالة معلقة</li>
-                )}
               </ul>
               <p className="text-xs text-red-600 dark:text-red-400 mt-2">
                 يجب حذف أو نقل جميع السجلات المرتبطة أولاً
+              </p>
+            </div>
+          )}
+          {referrer.stats.pendingReferrals > 0 && !cannotDelete && (
+            <div className="mt-3 p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+              <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                ملاحظة: سيتم حذف المندوب ولكن الإحالات ({referrer.stats.pendingReferrals} إحالة) ستبقى كما هي.
               </p>
             </div>
           )}
