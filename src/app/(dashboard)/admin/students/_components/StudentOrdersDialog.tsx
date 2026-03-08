@@ -67,12 +67,12 @@ export function StudentOrdersDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange} >
-      <DialogContent className="max-w-3xl" dir="rtl">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col" dir="rtl">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>سجل طلبات {student.name}</DialogTitle>
           <DialogDescription>عرض جميع طلبات الطالب</DialogDescription>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-4 overflow-y-auto flex-1">
           {isLoading ? (
             <div className="text-center py-8">
               <p className="text-gray-500">جاري التحميل...</p>
@@ -105,7 +105,7 @@ export function StudentOrdersDialog({
             </div>
           )}
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex-shrink-0 border-t pt-4 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             إغلاق
           </Button>

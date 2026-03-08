@@ -85,20 +85,21 @@ export function StudentViewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col" dir="rtl">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>تفاصيل الطالب</DialogTitle>
           <DialogDescription>
             عرض جميع المعلومات المتعلقة بالطالب
           </DialogDescription>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          </div>
-        ) : studentDetail ? (
-          <div className="space-y-4 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          ) : studentDetail ? (
+            <div className="space-y-4 py-4">
             {/* Student Info */}
             <Card>
               <CardHeader>
@@ -208,12 +209,13 @@ export function StudentViewDialog({
                 </CardContent>
               </Card>
             )}
-          </div>
-        ) : (
-          <div className="text-center py-12 text-gray-500">
-            فشل تحميل تفاصيل الطالب
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              فشل تحميل تفاصيل الطالب
+            </div>
+          )}
+        </div>
       </DialogContent>
 
       <StudentOrdersPaymentDialog
